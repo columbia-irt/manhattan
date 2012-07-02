@@ -1,0 +1,44 @@
+#!/bin/bash
+
+#clean all the daemon processes
+function clean {
+	for p in "mih_usr" "odtone-mihf" "link_sap" "miis_rdf_server"; do
+        	while true; do
+                	echo "ps ax | grep $p$ | awk '{print \$1}'"
+                	id="$(ps ax | grep $p$ | awk '{print $1}')"
+                	if [ -z  $id ]; then
+                        	echo "no process named $p"
+                        	break
+               		else
+				echo -e "kill $id\t($p)"
+				sudo kill $id
+                        	echo "killed"
+                	fi
+        	done
+	done
+}
+
+clean
+
+SINE_ROOT=
+ROOT_DIR=$SINE_ROOT/transport/mih/odtone
+
+pushd $ROOT_DIR/dist
+
+#run odtone-mihf, mih_usr and three link_saps
+./odtone-mihf 1> output &
+sleep 1
+./miis_rdf_server 1> output_miis &
+cd 802_3
+../link_sap 1> output &
+cd ../802_11
+../link_sap 1> output &
+cd ../lte
+../link_sap 1> output &
+cd ..
+sleep 1
+./mih_usr --dest=mihf1
+
+popd
+
+clean

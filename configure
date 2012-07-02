@@ -1,0 +1,53 @@
+#!/bin/bash
+
+sudo apt-get install g++ build-essential libxml2-dev libbz2-dev python-dev librdf0-dev indent flex bison #libcurl4-openssl-dev
+if [ ! -f "/usr/include/rasqal.h" ]
+then
+	sudo ln -s /usr/include/rasqal/rasqal.h /usr/include/rasqal.h
+fi
+if [ ! -f "/usr/include/raptor.h" ]
+then
+	sudo ln -s /usr/include/raptor2/raptor.h /usr/include/raptor.h
+fi
+if [ ! -f "/usr/include/raptor2.h" ]
+then
+	sudo ln -s /usr/include/raptor2/raptor2.h /usr/include/raptor2.h
+fi
+
+if [ ! -f "./protocols/openhip/Makefile" ]
+then
+	pushd ./protocols/openhip
+	./configure
+	popd
+fi
+
+if [ ! -f "./protocols/umip/Makefile" ]
+then
+	pushd ./protocols/umip
+	./configure
+	popd
+fi
+
+if [ ! -d "./protocols/mih/boost_1_48_0" ]
+then
+	wget http://downloads.sourceforge.net/project/boost/boost/1.48.0/boost_1_48_0.tar.bz2 -P ./protocols/mih/
+	tar -C ./protocols/mih -xf ./protocols/mih/boost_1_48_0.tar.bz2
+	rm ./protocols/mih/boost_1_48_0.tar.bz2
+fi
+
+if [ -z `which b2` ]
+then
+	pushd ./protocols/mih/boost_1_48_0
+	./bootstrap.sh
+	./b2
+	sudo ./b2 install
+	sudo cp b2 /usr/local/sbin/b2
+	popd
+fi
+
+if [ -z `grep -r sine /etc/iproute2/rt_tables` ]
+then
+	cp /etc/iproute2/rt_tables ./
+	echo -e "\n200\thip0\n201\teth0\n202\twlan0\n203\tppp0\n204\tsixxs\n205\the-ipv6\n252\tsine\n" >> rt_tables
+	sudo mv rt_tables /etc/iproute2/rt_tables
+fi

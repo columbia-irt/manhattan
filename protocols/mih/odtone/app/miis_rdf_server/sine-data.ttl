@@ -1,0 +1,40 @@
+@prefix : <http://www.mih.org/2006/09/rdf-basic-schema#> .
+
+<http://miisserver/WifiNetwork>
+:ie_network_type [
+       :link_type "19"
+       ];
+:ie_network_id "wlan0" ;
+:ie_cost [
+	:cost_unit "5" ;
+	:cost_value "20" ;
+	:cost_curr "USD"
+	];
+:bandwidth "56"
+.
+
+<http://miisserver/Ethernet>
+:ie_network_type [
+       :link_type "15"
+       ];
+:ie_network_id "eth0";
+:ie_cost [
+        :cost_unit "5" ;
+        :cost_value "10" ;
+        :cost_curr "USD"
+        ];
+:bandwidth "100"
+.
+
+<http://miisserver/LTE>
+:ie_network_type [
+       :link_type "4"
+       ];
+:ie_network_id "ppp0";
+:ie_cost [
+        :cost_unit "5" ;
+        :cost_value "100" ;
+        :cost_curr "USD"
+        ];
+:bandwidth "100"
+.

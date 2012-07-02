@@ -1,0 +1,12 @@
+All the source codes are located in folder middleware
+
+To build the codes, go into folder apps and simply type:
+	make
+Everything should be built. The generated binary file is called sined. Use the following command to see the parameters.
+	./sined -h
+
+Usually we run the demo by the following steps:
+1. copy the sine_policy.conf in the sine folder to /etc/sine_policy.conf
+2. copy the srelay.conf in the sine folder to /etc/srelay.conf
+3. go into folder apps and type
+	./sined -c /etc/srelay.conf -f

@@ -1,0 +1,27 @@
+To build the whole project:
+Enter the git root directory and type the following command
+	./configure
+	make all
+	sudo make install
+
+Configuration files
+MIH:
+	./transport/mih/dist/802_3/link_sap.conf
+	./transport/mih/dist/802_11/link_sap.conf
+	./transport/mih/dist/lte/link_sap.conf
+HIP:
+	/usr/local/etc/hip/known_host_identities.xml
+MIPv6:
+	/usr/local/etc/mip6d.conf
+Policy Engine:
+	/etc/sine_policy.conf
+SOCKS:
+	/etc/srelay.conf
+
+To run the project, run the following five components one by one in different terminals:
+	mih	(Network Manager)
+	lm	(Location Manager)
+	sudo hip -v	(HIP Daemon)
+	sudo mip6d	(MIPv6 Daemon)
+	sined -f -c /etc/srelay.conf	(SOCKS, Policy Engine and Connection Manager)
+
