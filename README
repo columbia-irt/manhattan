@@ -6,9 +6,9 @@ Enter the git root directory and type the following command
 
 Configuration files
 MIH:
-	./transport/mih/dist/802_3/link_sap.conf
-	./transport/mih/dist/802_11/link_sap.conf
-	./transport/mih/dist/lte/link_sap.conf
+	./protocols/mih/dist/802_3/link_sap.conf
+	./protocols/mih/dist/802_11/link_sap.conf
+	./protocols/mih/dist/lte/link_sap.conf
 HIP:
 	/usr/local/etc/hip/known_host_identities.xml
 MIPv6:
