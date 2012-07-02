@@ -4208,7 +4208,7 @@ $as_echo "$ac_cv_safe_to_define___extensions__" >&6; }
 
 
 
-CFLAGS="$CFLAGS -O3 -Werror -Wno-unused-but-set-variable -D_GNU_SOURCE -fno-strict-aliasing"
+CFLAGS="$CFLAGS -O3 -Werror -D_GNU_SOURCE -fno-strict-aliasing"
 
 # HIP files go in /etc/hip or /usr/local/etc/hip
 sysconfdir=$sysconfdir/hip
