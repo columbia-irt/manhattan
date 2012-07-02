@@ -1,0 +1,11 @@
+#!/bin/bash
+
+id="$(ps -e | grep ' sined$' | awk '{print $1}')"
+echo $id
+if [ -z "$id" ]
+then
+	echo not found
+else
+	kill -9 $id
+	echo killed
+fi
