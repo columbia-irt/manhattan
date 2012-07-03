@@ -2182,7 +2182,7 @@ void md_cleanup(void)
 }
 
 int pref_change(const char *ifname) {
-	struct list_head *l, *n;
+	struct list_head *l;//, *n;
 	struct md_inet6_iface *newif = NULL;
 	struct md_inet6_iface *oldif = NULL;
 	struct md_router *rtr;
@@ -2222,14 +2222,24 @@ int pref_change(const char *ifname) {
 				//__md_free_router(rtr);
 				route_del(rtr->ifindex, RT_TABLE_MAIN, 0,
 					&in6addr_any, 0, &in6addr_any, 0, &rtr->lladdr);
-
+				/* //yan - maintain wlan0 address - July 2, 2012
 				list_for_each_safe(l, n, &rtr->prefixes) {
 					struct prefix_list_entry *p;
 					p = list_entry(l, struct prefix_list_entry, list);
 					route_del(rtr->ifindex, RT_TABLE_MAIN, 0, &in6addr_any,
 						0, &p->ple_prefix, p->ple_plen, NULL);
-				}
+				}*/
 			}
+		}
+
+		//add route specially to home agent - July 2, 2012
+		list_for_each(l, &conf.home_addrs) {
+			struct home_addr_info *hai = list_entry(l, struct home_addr_info, list);
+			route_add(newif->ifindex, RT_TABLE_MAIN, RTPROT_STATIC, RTF_DEFAULT|RTF_ADDRCONF, 256, &in6addr_any, 0, &hai->ha_addr, 128, 0);
+			if (oldif) {
+				route_del(oldif->ifindex, RT_TABLE_MAIN, 256, &in6addr_any, 0, &hai->ha_addr, 128, 0);
+			}
+			MDBG("ha %x:%x:%x:%x:%x:%x:%x:%x\n", NIP6ADDR(&hai->ha_addr));
 		}
 
 		if (newif->is_tunnel) {

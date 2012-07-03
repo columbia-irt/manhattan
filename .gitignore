@@ -18,7 +18,7 @@ protocols/mih/odtone/dist/mih_usr.conf
 protocols/mih/odtone/dist/miis_rdf_server
 protocols/mih/odtone/dist/miis_rdf_server.conf
 protocols/mih/odtone/dist/odtone-mihf
-protocols/mih/odtone/dist/odtone.conf
+#protocols/mih/odtone/dist/odtone.conf
 protocols/openhip/config.log
 protocols/openhip/config.status
 protocols/openhip/Makefile
