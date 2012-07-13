@@ -1274,11 +1274,15 @@ int forward_connect(SOCKS_STATE *state)
 
     //yan - begin - get rid of home address for hip connection
 	addr = &(((struct sockaddr_in6 *)res->ai_addr)->sin6_addr);
+	//printf("%x %x %x %x %x\n", addr->s6_addr[0], addr->s6_addr[1],
+	//	addr->s6_addr[2], addr->s6_addr[3], addr->s6_addr[4]);
 	if (addr->s6_addr[0] == 0x20 && addr->s6_addr[1] == 0x01 &&
 		addr->s6_addr[2] == 0x00 &&
-		(addr->s6_addr[3] >= 0x10 && addr->s6_addr[4] < 0x20)) {
+		(addr->s6_addr[3] >= 0x10 && addr->s6_addr[3] < 0x20)) {
+		printf("choose coa as preferred address\n");
 		preferences = IPV6_PREFER_SRC_COA;	//hip address
 	} else {
+		printf("choose ha as preferred address\n");
 		preferences = IPV6_PREFER_SRC_HOME;	//normal address
 	}
 

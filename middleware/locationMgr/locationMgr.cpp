@@ -142,7 +142,7 @@ void *query_handler (void *arg)
 		case 'q':
 			//if (len < 3)
 			//	std::cout << "Query handler: bad msg format" << std::endl;
-			std::cout << "Query received" << std::endl;
+			//std::cout << "Query received" << std::endl;
 			pthread_mutex_lock(&loc_mutex);/*
 			if (strcmp(loc.c_str(), buf + 2) == 0)
 			{
