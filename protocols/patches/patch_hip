@@ -405,7 +405,7 @@ else
 	' ../openhip/src/protocol/hip_input.c"
 	sed -i '/l->status == UNVERIFIED/i\
 			//yan-begin\
-			(l->preferred || *addrcheck == NULL) &&\
+			l->preferred &&\
 			//yan-end
 		' ../openhip/src/protocol/hip_input.c
 

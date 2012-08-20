@@ -2977,7 +2977,7 @@ int handle_update_readdress(hip_assoc *hip_a, struct sockaddr **addrcheck)
         }
       else if (!hip_a->peer_hi->skip_addrcheck &&
 			//yan-begin
-			(l->preferred || *addrcheck == NULL) &&
+			l->preferred &&
 			//yan-end
                (l->status == UNVERIFIED))
         {
