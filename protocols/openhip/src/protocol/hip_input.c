@@ -2976,6 +2976,9 @@ int handle_update_readdress(hip_assoc *hip_a, struct sockaddr **addrcheck)
           /* choose address to verify */
         }
       else if (!hip_a->peer_hi->skip_addrcheck &&
+			//yan-begin
+			(l->preferred || *addrcheck == NULL) &&
+			//yan-end
                (l->status == UNVERIFIED))
         {
           /* XXX for now, verify only the first address */

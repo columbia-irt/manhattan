@@ -398,6 +398,17 @@ then
 else
 	echo "../openhip/src/protocol/hip_input.c:"
 
+	echo -e "sed -i '/l->status == UNVERIFIED/i\
+			//yan-begin\
+			(l->preferred || *addrcheck == NULL) &&\
+			//yan-end
+	' ../openhip/src/protocol/hip_input.c"
+	sed -i '/l->status == UNVERIFIED/i\
+			//yan-begin\
+			(l->preferred || *addrcheck == NULL) &&\
+			//yan-end
+		' ../openhip/src/protocol/hip_input.c
+
 	echo -e "sed -i '/if ((hip_a->available_transforms >>/i\\ \n\
 		//yan-begin - control encryption\\ \n\
 		if (esp && encrypt_off &&\\ \n\

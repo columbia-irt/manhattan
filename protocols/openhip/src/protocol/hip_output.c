@@ -1018,7 +1018,7 @@ int hip_send_update(hip_assoc *hip_a, struct sockaddr *newaddr,
       /* use the preferred address or first one of this family */
       src = l ? SA(&l->addr) : (l2 ? SA(&l2->addr) : src);
     }
-  log_(NORM, "Sending UPDATE from source address %s\n", logaddr(src));
+  log_(NORM, "Sending UPDATE from source address %s with new address %s\n", logaddr(src), logaddr(newaddr));	//yan
 
   /* build the HIP header */
   hiph = (hiphdr*) buff;
