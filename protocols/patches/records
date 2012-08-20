@@ -1,0 +1,28 @@
+pref_thread:
+	protocol/hip_main.c: main_loop (var: pref_thread)
+	protocol/hip_addr.c: pref_listener (var: prefer_changed, pref_mutex)
+	util/hip_util.c: hip_exit (var: pref_thread)
+
+interface control:
+	protocol/hip_main.c: main_loop
+	protocol/hip_addr.c: select_preferred_address
+				set_link_params
+				devname_to_index
+				readdress_association
+				readdress_association_x2
+				pref_listener
+				get_router_str
+			(var: hip_preferred_ifname
+				hip_current_ifname)
+	util/hip_util.c: hip_exit
+
+use COA address instead of Home Address:
+	protocol/hip_main.c: main_loop
+	protocol/hip_output.c: hip_send
+	usermode/hip_esp.c: hip_esp_output
+	usermode/hip_mr.c: hip_mobile_router
+	usermode/hip_umh_main.c: init_esp_input
+
+control encryption:
+	protocol/hip_input.c: handle_transforms (var: encrypt_off)
+	protocol/hip_addr.c: pref_listener (var: encrypt_off)

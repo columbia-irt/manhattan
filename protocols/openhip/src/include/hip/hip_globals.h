@@ -1,37 +1,43 @@
+/* -*- Mode:cc-mode; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+/* vim: set ai sw=2 ts=2 et cindent cino={1s: */
 /*
  * Host Identity Protocol
- * Copyright (C) 2002-05 the Boeing Company
+ * Copyright (c) 2002-2012 the Boeing Company
  * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *  \file  hip_globals.h
  *
- *  hip_globals.h
+ *  \authors	Jeff Ahrenholz, <jeffrey.m.ahrenholz@boeing.com>
  *
- *  Author:	Jeff Ahrenholz, <jeffrey.m.ahrenholz@boeing.com>
- *  
+ *  \brief  Global variable definitions.
+ *
  */
-#include <openssl/dsa.h>	/* DSA support                  */
-#include <openssl/dh.h>		/* Diffie-Hellman contexts      */
-#include <math.h>		/* for exponential macros (reg life) */
+#ifndef _HIP_GLOBALS_H_
+#define _HIP_GLOBALS_H_
+
+#include <openssl/dsa.h>        /* DSA support                  */
+#include <openssl/dh.h>         /* Diffie-Hellman contexts      */
+#include <math.h>               /* for exponential macros (reg life) */
 #include <hip/hip_types.h>
 
 /* global variables */
-//yan
-#define IPV6_ADDR_PREFERENCES   72
-
-#define IPV6_PREFER_SRC_TMP             0x0001
-#define IPV6_PREFER_SRC_PUBLIC          0x0002
-#define IPV6_PREFER_SRC_COA             0x0004
-#define IPV6_PREFER_SRC_HOME            0x0400
-//yan-end
-
 
 /* Array storing HIP association structs (this is the state machine state) */
 extern hip_assoc hip_assoc_table[MAX_CONNECTIONS];
@@ -53,12 +59,11 @@ extern dh_cache_entry *dh_cache;
 /* Diffie-Hellman constants */
 extern const unsigned char *dhprime[DH_MAX];
 extern const int dhprime_len[DH_MAX]; /* only used by new_dh_cache_entry()
-					   use DH_size() elsewhere */
+                                       *    use DH_size() elsewhere */
 extern unsigned char dhgen[DH_MAX];
 
-extern int pfk_seqno; /* PFKEY messages need to be numbered */
 
-extern int s_hip, s_pfk; /* PFKEY and RAW socket handles */
+extern int s_hip; /* RAW socket handle */
 #undef s_net
 extern int s_net; /* netlink socket */
 extern int s6_hip; /* RAW IPv6 socket handle */
@@ -70,16 +75,60 @@ extern struct hip_opt OPT;
 /* Global configuration data */
 extern struct hip_conf HCNF;
 
-#ifdef __UMH__
-extern int pfkeysp[2];
+extern int espsp[2]; /* ESP thread socket pair */
 extern int g_state;
-#endif
 #ifdef __WIN32__
 extern int netlsp[2];
 #endif
 
 const unsigned char khi_context_id[16];
 
-/* smartcard signing */
-extern RSA *sc_rsa;
-extern DSA *sc_dsa;
+#endif
+//yan-begin
+
+#ifndef _HIP_GLOBALS_SINE_
+#define _HIP_GLOBALS_SINE_
+
+#define IP_VERSION 6
+#if (IP_VERSION == 6)
+#define DEST_ADDR "2001:468:904:16:221:86ff:fe52:7b3e"
+//#define DEST_ADDR "2001:470:1f06:415::2"
+#else
+#define DEST_ADDR "128.59.16.0/21"
+#endif
+
+#define IPV6_ADDR_PREFERENCES   72
+
+#define IPV6_PREFER_SRC_TMP             0x0001
+#define IPV6_PREFER_SRC_PUBLIC          0x0002
+#define IPV6_PREFER_SRC_COA             0x0004
+#define IPV6_PREFER_SRC_HOME            0x0400
+
+#include <pthread.h>
+
+extern pthread_t pref_thread;// = -1;
+
+extern char hip_preferred_ifname[20];// = {0};    //04/09/2012 - hard code max length of ifname
+extern char hip_current_ifname[20];// = {0};      //05/06/2012 - change routing table in readdress
+extern volatile int prefer_changed;// = 0;        //04/20/2012
+
+extern pthread_mutex_t pref_mutex;// = PTHREAD_MUTEX_INITIALIZER;
+
+extern volatile int encrypt_off;
+
+void hip_sine_init();
+
+void hip_sine_cleanup();
+
+void hip_handoff(sockaddr_list *l);
+
+void hip_route_change(int ip_version, const char *dest_addr,
+		const char *old_ifname, const char *new_ifname);
+
+void *hip_pref_listener(void *arg);
+
+char* get_router_str(const char* ifname);
+
+#endif
+
+//yan-end

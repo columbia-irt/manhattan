@@ -17,22 +17,31 @@
 
 #
 # Host Identity Protocol
-# Copyright (c) 2006-2011 the Boeing Company
+# Copyright (c) 2006-2012 the Boeing Company
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
+#  \file  src/Makefile.am
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#  \authors  Jeff Ahrenholz <jeffrey.m.ahrenholz@boeing.com>
 #
-# Makefile.am
-#
-# Author: Jeff Ahrenholz <jeffrey.m.ahrenholz@boeing.com>
-#
+#  \brief  Automake makefile.
 #
 
 VPATH = @srcdir@
@@ -52,23 +61,16 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-build_triplet = @build@
-host_triplet = @host@
-sbin_PROGRAMS = hitgen$(EXEEXT) hip$(EXEEXT) hipstatus$(EXEEXT) \
-	$(am__EXEEXT_1)
-@WANT_KERNEL_TRUE@am__append_1 = hipd
-@WANT_KERNEL_FALSE@am__append_2 = -D__UMH__
-@WANT_MOBILE_ROUTER_TRUE@am__append_3 = usermode/hip_mr.c
+sbin_PROGRAMS = hitgen$(EXEEXT) hip$(EXEEXT) hipstatus$(EXEEXT)
 
 # Mac support
-@WANT_OSX_TRUE@am__append_4 = -D__MACOSX__
-@WANT_OSX_TRUE@am__append_5 = -D__MACOSX__
-@WANT_OSX_TRUE@am__append_6 = mac/hip_mac.c
+@WANT_OSX_TRUE@am__append_1 = -D__MACOSX__
+@WANT_OSX_TRUE@am__append_2 = -D__MACOSX__
+@WANT_OSX_TRUE@am__append_3 = mac/hip_mac.c
 
 # VPLS support
-@WANT_VPLS_TRUE@am__append_7 = usermode/hip_endbox.c
-@WANT_VPLS_TRUE@am__append_8 = util/cfg-api/hip_cfg_api.c
-@WANT_VPLS_TRUE@am__append_9 = util/sc_utils.c
+@WANT_VPLS_TRUE@am__append_4 = usermode/hip_endbox.c
+@WANT_VPLS_TRUE@am__append_5 = util/cfg-api/hip_cfg_api.c
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -79,73 +81,48 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-@WANT_KERNEL_TRUE@am__EXEEXT_1 = hipd$(EXEEXT)
 am__installdirs = "$(DESTDIR)$(sbindir)"
 PROGRAMS = $(sbin_PROGRAMS)
-am__hip_SOURCES_DIST = protocol/hip_addr.c protocol/hip_cache.c \
-	protocol/hip_dht.c protocol/hip_globals.c protocol/hip_input.c \
-	protocol/hip_ipsec.c protocol/hip_keymat.c protocol/hip_main.c \
+am__hip_SOURCES_DIST = linux/hip_linux_umh.c protocol/hip_addr.c \
+	protocol/hip_cache.c protocol/hip_dht.c protocol/hip_globals.c \
+	protocol/hip_input.c protocol/hip_ipsec.c \
+	protocol/hip_keymat.c protocol/hip_main.c \
 	protocol/hip_output.c protocol/hip_status.c util/hip_util.c \
 	util/hip_xml.c util/cfg-api/hip_cfg_api.c \
-	linux/hip_linux_umh.c usermode/hip_umh_main.c \
-	usermode/hip_dns.c usermode/hip_pfkey.c \
-	usermode/libipsec_stub.c usermode/hip_esp.c \
+	usermode/hip_umh_main.c usermode/hip_dns.c usermode/hip_esp.c \
 	usermode/hip_sadb.c usermode/hip_status2.c usermode/hip_mr.c \
 	mac/hip_mac.c usermode/hip_endbox.c
-am__objects_1 = hip-hip_addr.$(OBJEXT) hip-hip_cache.$(OBJEXT) \
+am__objects_1 = hip-hip_linux_umh.$(OBJEXT)
+am__objects_2 = hip-hip_addr.$(OBJEXT) hip-hip_cache.$(OBJEXT) \
 	hip-hip_dht.$(OBJEXT) hip-hip_globals.$(OBJEXT) \
 	hip-hip_input.$(OBJEXT) hip-hip_ipsec.$(OBJEXT) \
 	hip-hip_keymat.$(OBJEXT) hip-hip_main.$(OBJEXT) \
 	hip-hip_output.$(OBJEXT) hip-hip_status.$(OBJEXT)
-@WANT_VPLS_TRUE@am__objects_2 = hip-hip_cfg_api.$(OBJEXT)
-am__objects_3 = hip-hip_util.$(OBJEXT) hip-hip_xml.$(OBJEXT) \
-	$(am__objects_2)
-am__objects_4 = hip-hip_linux_umh.$(OBJEXT)
-@WANT_MOBILE_ROUTER_TRUE@am__objects_5 = hip-hip_mr.$(OBJEXT)
-@WANT_OSX_TRUE@am__objects_6 = hip-hip_mac.$(OBJEXT)
-@WANT_VPLS_TRUE@am__objects_7 = hip-hip_endbox.$(OBJEXT)
-am__objects_8 = hip-hip_umh_main.$(OBJEXT) hip-hip_dns.$(OBJEXT) \
-	hip-hip_pfkey.$(OBJEXT) hip-libipsec_stub.$(OBJEXT) \
+@WANT_VPLS_TRUE@am__objects_3 = hip-hip_cfg_api.$(OBJEXT)
+am__objects_4 = hip-hip_util.$(OBJEXT) hip-hip_xml.$(OBJEXT) \
+	$(am__objects_3)
+@WANT_OSX_TRUE@am__objects_5 = hip-hip_mac.$(OBJEXT)
+@WANT_VPLS_TRUE@am__objects_6 = hip-hip_endbox.$(OBJEXT)
+am__objects_7 = hip-hip_umh_main.$(OBJEXT) hip-hip_dns.$(OBJEXT) \
 	hip-hip_esp.$(OBJEXT) hip-hip_sadb.$(OBJEXT) \
-	hip-hip_status2.$(OBJEXT) $(am__objects_5) $(am__objects_6) \
+	hip-hip_status2.$(OBJEXT) hip-hip_mr.$(OBJEXT) \
+	$(am__objects_5) $(am__objects_6)
+am_hip_OBJECTS = $(am__objects_1) $(am__objects_2) $(am__objects_4) \
 	$(am__objects_7)
-am_hip_OBJECTS = $(am__objects_1) $(am__objects_3) $(am__objects_4) \
-	$(am__objects_8)
 hip_OBJECTS = $(am_hip_OBJECTS)
 hip_LDADD = $(LDADD)
 hip_DEPENDENCIES =
 hip_LINK = $(CCLD) $(hip_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o \
 	$@
-am__hipd_SOURCES_DIST = protocol/hip_addr.c protocol/hip_cache.c \
-	protocol/hip_dht.c protocol/hip_globals.c protocol/hip_input.c \
-	protocol/hip_ipsec.c protocol/hip_keymat.c protocol/hip_main.c \
-	protocol/hip_output.c protocol/hip_status.c util/hip_util.c \
-	util/hip_xml.c util/cfg-api/hip_cfg_api.c \
-	linux/hip_linux_main.c
-am__objects_9 = hip_addr.$(OBJEXT) hip_cache.$(OBJEXT) \
-	hip_dht.$(OBJEXT) hip_globals.$(OBJEXT) hip_input.$(OBJEXT) \
-	hip_ipsec.$(OBJEXT) hip_keymat.$(OBJEXT) hip_main.$(OBJEXT) \
-	hip_output.$(OBJEXT) hip_status.$(OBJEXT)
-@WANT_VPLS_TRUE@am__objects_10 = hip_cfg_api.$(OBJEXT)
-am__objects_11 = hip_util.$(OBJEXT) hip_xml.$(OBJEXT) \
-	$(am__objects_10)
-am__objects_12 = hip_linux_main.$(OBJEXT)
-am_hipd_OBJECTS = $(am__objects_9) $(am__objects_11) $(am__objects_12)
-hipd_OBJECTS = $(am_hipd_OBJECTS)
-hipd_LDADD = $(LDADD)
-hipd_DEPENDENCIES =
 am_hipstatus_OBJECTS = hipstatus-usermode-status.$(OBJEXT)
 hipstatus_OBJECTS = $(am_hipstatus_OBJECTS)
 hipstatus_LDADD = $(LDADD)
 hipstatus_DEPENDENCIES =
 hipstatus_LINK = $(CCLD) $(hipstatus_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am__hitgen_SOURCES_DIST = util/hitgen.c util/hip_util.c \
-	protocol/hip_globals.c util/sc_utils.c
-@WANT_VPLS_TRUE@am__objects_13 = hitgen-sc_utils.$(OBJEXT)
-am__objects_14 = hitgen-hitgen.$(OBJEXT) hitgen-hip_util.$(OBJEXT) \
-	hitgen-hip_globals.$(OBJEXT) $(am__objects_13)
-am_hitgen_OBJECTS = $(am__objects_14)
+am__objects_8 = hitgen-hitgen.$(OBJEXT) hitgen-hip_util.$(OBJEXT) \
+	hitgen-hip_globals.$(OBJEXT)
+am_hitgen_OBJECTS = $(am__objects_8)
 hitgen_OBJECTS = $(am_hitgen_OBJECTS)
 hitgen_LDADD = $(LDADD)
 hitgen_DEPENDENCIES =
@@ -159,10 +136,9 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(hip_SOURCES) $(hipd_SOURCES) $(hipstatus_SOURCES) \
+SOURCES = $(hip_SOURCES) $(hipstatus_SOURCES) $(hitgen_SOURCES)
+DIST_SOURCES = $(am__hip_SOURCES_DIST) $(hipstatus_SOURCES) \
 	$(hitgen_SOURCES)
-DIST_SOURCES = $(am__hip_SOURCES_DIST) $(am__hipd_SOURCES_DIST) \
-	$(hipstatus_SOURCES) $(am__hitgen_SOURCES_DIST)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -177,6 +153,21 @@ AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
 	distdir
 ETAGS = etags
 CTAGS = ctags
+# If stdout is a non-dumb tty, use colors.  If test -t is not supported,
+# then this fails; a conservative approach.  Of course do not redirect
+# stdout here, just stderr.
+am__tty_colors = \
+red=; grn=; lgn=; blu=; std=; \
+test "X$(AM_COLOR_TESTS)" != Xno \
+&& test "X$$TERM" != Xdumb \
+&& { test "X$(AM_COLOR_TESTS)" = Xalways || test -t 1 2>/dev/null; } \
+&& { \
+  red='[0;31m'; \
+  grn='[0;32m'; \
+  lgn='[1;32m'; \
+  blu='[1;34m'; \
+  std='[m'; \
+}
 DIST_SUBDIRS = util
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 am__relativize = \
@@ -213,7 +204,6 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
-CONFIGURE_AMGFLAGS = @CONFIGURE_AMGFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -265,22 +255,14 @@ am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
 bindir = @bindir@
-build = @build@
 build_alias = @build_alias@
-build_cpu = @build_cpu@
-build_os = @build_os@
-build_vendor = @build_vendor@
 builddir = @builddir@
 datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
-host = @host@
 host_alias = @host_alias@
-host_cpu = @host_cpu@
-host_os = @host_os@
-host_vendor = @host_vendor@
 htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
@@ -306,6 +288,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+AUTOMAKE_OPTIONS = color-tests
 
 # HIP protocol source files
 SRC_PROTO = protocol/hip_addr.c protocol/hip_cache.c protocol/hip_dht.c \
@@ -315,36 +298,40 @@ SRC_PROTO = protocol/hip_addr.c protocol/hip_cache.c protocol/hip_dht.c \
 
 
 # Utility source files
-SRC_UTIL = util/hip_util.c util/hip_xml.c $(am__append_8)
+SRC_UTIL = util/hip_util.c util/hip_xml.c $(am__append_5)
 
 # Linux main files 
-SRC_MAIN_KERN = linux/hip_linux_main.c
-SRC_MAIN_UMH = linux/hip_linux_umh.c
+SRC_HIP = linux/hip_linux_umh.c
 
 # Hitgen source files
-SRC_HITGEN = util/hitgen.c util/hip_util.c protocol/hip_globals.c \
-	$(am__append_9)
-hitgen_CFLAGS = -DHITGEN $(am__append_2) $(am__append_5)
+SRC_HITGEN = util/hitgen.c util/hip_util.c protocol/hip_globals.c
+hitgen_CFLAGS = -DHITGEN $(am__append_2)
 
 # Usermode version
-hip_CFLAGS = -D__UMH__ $(am__append_4)
+hip_CFLAGS = $(am__append_1)
 SRC_USERMODE = usermode/hip_umh_main.c usermode/hip_dns.c \
-	usermode/hip_pfkey.c usermode/libipsec_stub.c \
 	usermode/hip_esp.c usermode/hip_sadb.c usermode/hip_status2.c \
-	$(am__append_3) $(am__append_6) $(am__append_7)
+	usermode/hip_mr.c $(am__append_3) $(am__append_4)
 @WANT_OSX_TRUE@hipstatus_CFLAGS = -D__MACOSX__
 INCLUDES = -I./include @libxml2_CFLAGS@
 LDADD = @libxml2_LIBS@ -lz -ldl
 @WANT_VPLS_TRUE@SUBDIRS = util
 
-# i3 support
-SRC_PROTO_I3 = protocol/i3_send.c protocol/i3_recv.c
-
 # different targets
 hitgen_SOURCES = $(SRC_HITGEN)
-hipd_SOURCES = $(SRC_PROTO) $(SRC_UTIL) $(SRC_MAIN_KERN)
-hip_SOURCES = $(SRC_PROTO) $(SRC_UTIL) $(SRC_MAIN_UMH) $(SRC_USERMODE)
+hip_SOURCES = $(SRC_HIP) $(SRC_PROTO) $(SRC_UTIL) $(SRC_USERMODE)
 hipstatus_SOURCES = util/usermode-status.c
+AM_COLOR_TESTS = always
+scriptdir = util/scripts
+@WANT_VPLS_FALSE@TESTS = $(scriptdir)/test-bex.sh $(scriptdir)/test-mobility.sh \
+@WANT_VPLS_FALSE@	$(scriptdir)/test-rekey.sh
+
+@WANT_VPLS_TRUE@TESTS = $(scriptdir)/test-endbox.sh
+
+# Extra files to include with distribution tarball. The autoconf system does
+# not know about some of the file used for WIN32, packaging, etc.
+EXTRA_DIST = include linux util usermode/hip_nl.c win32
+DISTCLEANFILES = Makefile.in util/Makefile.in 
 all: all-recursive
 
 .SUFFIXES:
@@ -419,9 +406,6 @@ clean-sbinPROGRAMS:
 hip$(EXEEXT): $(hip_OBJECTS) $(hip_DEPENDENCIES) 
 	@rm -f hip$(EXEEXT)
 	$(hip_LINK) $(hip_OBJECTS) $(hip_LDADD) $(LIBS)
-hipd$(EXEEXT): $(hipd_OBJECTS) $(hipd_DEPENDENCIES) 
-	@rm -f hipd$(EXEEXT)
-	$(LINK) $(hipd_OBJECTS) $(hipd_LDADD) $(LIBS)
 hipstatus$(EXEEXT): $(hipstatus_OBJECTS) $(hipstatus_DEPENDENCIES) 
 	@rm -f hipstatus$(EXEEXT)
 	$(hipstatus_LINK) $(hipstatus_OBJECTS) $(hipstatus_LDADD) $(LIBS)
@@ -451,33 +435,16 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip-hip_main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip-hip_mr.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip-hip_output.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip-hip_pfkey.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip-hip_sadb.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip-hip_status.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip-hip_status2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip-hip_umh_main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip-hip_util.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip-hip_xml.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip-libipsec_stub.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip_addr.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip_cache.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip_cfg_api.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip_dht.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip_globals.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip_input.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip_ipsec.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip_keymat.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip_linux_main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip_main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip_output.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip_status.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip_util.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hip_xml.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hipstatus-usermode-status.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hitgen-hip_globals.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hitgen-hip_util.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hitgen-hitgen.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hitgen-sc_utils.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -492,6 +459,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+hip-hip_linux_umh.o: linux/hip_linux_umh.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -MT hip-hip_linux_umh.o -MD -MP -MF $(DEPDIR)/hip-hip_linux_umh.Tpo -c -o hip-hip_linux_umh.o `test -f 'linux/hip_linux_umh.c' || echo '$(srcdir)/'`linux/hip_linux_umh.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip-hip_linux_umh.Tpo $(DEPDIR)/hip-hip_linux_umh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='linux/hip_linux_umh.c' object='hip-hip_linux_umh.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -c -o hip-hip_linux_umh.o `test -f 'linux/hip_linux_umh.c' || echo '$(srcdir)/'`linux/hip_linux_umh.c
+
+hip-hip_linux_umh.obj: linux/hip_linux_umh.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -MT hip-hip_linux_umh.obj -MD -MP -MF $(DEPDIR)/hip-hip_linux_umh.Tpo -c -o hip-hip_linux_umh.obj `if test -f 'linux/hip_linux_umh.c'; then $(CYGPATH_W) 'linux/hip_linux_umh.c'; else $(CYGPATH_W) '$(srcdir)/linux/hip_linux_umh.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip-hip_linux_umh.Tpo $(DEPDIR)/hip-hip_linux_umh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='linux/hip_linux_umh.c' object='hip-hip_linux_umh.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -c -o hip-hip_linux_umh.obj `if test -f 'linux/hip_linux_umh.c'; then $(CYGPATH_W) 'linux/hip_linux_umh.c'; else $(CYGPATH_W) '$(srcdir)/linux/hip_linux_umh.c'; fi`
 
 hip-hip_addr.o: protocol/hip_addr.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -MT hip-hip_addr.o -MD -MP -MF $(DEPDIR)/hip-hip_addr.Tpo -c -o hip-hip_addr.o `test -f 'protocol/hip_addr.c' || echo '$(srcdir)/'`protocol/hip_addr.c
@@ -675,20 +656,6 @@ hip-hip_cfg_api.obj: util/cfg-api/hip_cfg_api.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -c -o hip-hip_cfg_api.obj `if test -f 'util/cfg-api/hip_cfg_api.c'; then $(CYGPATH_W) 'util/cfg-api/hip_cfg_api.c'; else $(CYGPATH_W) '$(srcdir)/util/cfg-api/hip_cfg_api.c'; fi`
 
-hip-hip_linux_umh.o: linux/hip_linux_umh.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -MT hip-hip_linux_umh.o -MD -MP -MF $(DEPDIR)/hip-hip_linux_umh.Tpo -c -o hip-hip_linux_umh.o `test -f 'linux/hip_linux_umh.c' || echo '$(srcdir)/'`linux/hip_linux_umh.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip-hip_linux_umh.Tpo $(DEPDIR)/hip-hip_linux_umh.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='linux/hip_linux_umh.c' object='hip-hip_linux_umh.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -c -o hip-hip_linux_umh.o `test -f 'linux/hip_linux_umh.c' || echo '$(srcdir)/'`linux/hip_linux_umh.c
-
-hip-hip_linux_umh.obj: linux/hip_linux_umh.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -MT hip-hip_linux_umh.obj -MD -MP -MF $(DEPDIR)/hip-hip_linux_umh.Tpo -c -o hip-hip_linux_umh.obj `if test -f 'linux/hip_linux_umh.c'; then $(CYGPATH_W) 'linux/hip_linux_umh.c'; else $(CYGPATH_W) '$(srcdir)/linux/hip_linux_umh.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip-hip_linux_umh.Tpo $(DEPDIR)/hip-hip_linux_umh.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='linux/hip_linux_umh.c' object='hip-hip_linux_umh.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -c -o hip-hip_linux_umh.obj `if test -f 'linux/hip_linux_umh.c'; then $(CYGPATH_W) 'linux/hip_linux_umh.c'; else $(CYGPATH_W) '$(srcdir)/linux/hip_linux_umh.c'; fi`
-
 hip-hip_umh_main.o: usermode/hip_umh_main.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -MT hip-hip_umh_main.o -MD -MP -MF $(DEPDIR)/hip-hip_umh_main.Tpo -c -o hip-hip_umh_main.o `test -f 'usermode/hip_umh_main.c' || echo '$(srcdir)/'`usermode/hip_umh_main.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip-hip_umh_main.Tpo $(DEPDIR)/hip-hip_umh_main.Po
@@ -716,34 +683,6 @@ hip-hip_dns.obj: usermode/hip_dns.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='usermode/hip_dns.c' object='hip-hip_dns.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -c -o hip-hip_dns.obj `if test -f 'usermode/hip_dns.c'; then $(CYGPATH_W) 'usermode/hip_dns.c'; else $(CYGPATH_W) '$(srcdir)/usermode/hip_dns.c'; fi`
-
-hip-hip_pfkey.o: usermode/hip_pfkey.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -MT hip-hip_pfkey.o -MD -MP -MF $(DEPDIR)/hip-hip_pfkey.Tpo -c -o hip-hip_pfkey.o `test -f 'usermode/hip_pfkey.c' || echo '$(srcdir)/'`usermode/hip_pfkey.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip-hip_pfkey.Tpo $(DEPDIR)/hip-hip_pfkey.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='usermode/hip_pfkey.c' object='hip-hip_pfkey.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -c -o hip-hip_pfkey.o `test -f 'usermode/hip_pfkey.c' || echo '$(srcdir)/'`usermode/hip_pfkey.c
-
-hip-hip_pfkey.obj: usermode/hip_pfkey.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -MT hip-hip_pfkey.obj -MD -MP -MF $(DEPDIR)/hip-hip_pfkey.Tpo -c -o hip-hip_pfkey.obj `if test -f 'usermode/hip_pfkey.c'; then $(CYGPATH_W) 'usermode/hip_pfkey.c'; else $(CYGPATH_W) '$(srcdir)/usermode/hip_pfkey.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip-hip_pfkey.Tpo $(DEPDIR)/hip-hip_pfkey.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='usermode/hip_pfkey.c' object='hip-hip_pfkey.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -c -o hip-hip_pfkey.obj `if test -f 'usermode/hip_pfkey.c'; then $(CYGPATH_W) 'usermode/hip_pfkey.c'; else $(CYGPATH_W) '$(srcdir)/usermode/hip_pfkey.c'; fi`
-
-hip-libipsec_stub.o: usermode/libipsec_stub.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -MT hip-libipsec_stub.o -MD -MP -MF $(DEPDIR)/hip-libipsec_stub.Tpo -c -o hip-libipsec_stub.o `test -f 'usermode/libipsec_stub.c' || echo '$(srcdir)/'`usermode/libipsec_stub.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip-libipsec_stub.Tpo $(DEPDIR)/hip-libipsec_stub.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='usermode/libipsec_stub.c' object='hip-libipsec_stub.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -c -o hip-libipsec_stub.o `test -f 'usermode/libipsec_stub.c' || echo '$(srcdir)/'`usermode/libipsec_stub.c
-
-hip-libipsec_stub.obj: usermode/libipsec_stub.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -MT hip-libipsec_stub.obj -MD -MP -MF $(DEPDIR)/hip-libipsec_stub.Tpo -c -o hip-libipsec_stub.obj `if test -f 'usermode/libipsec_stub.c'; then $(CYGPATH_W) 'usermode/libipsec_stub.c'; else $(CYGPATH_W) '$(srcdir)/usermode/libipsec_stub.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip-libipsec_stub.Tpo $(DEPDIR)/hip-libipsec_stub.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='usermode/libipsec_stub.c' object='hip-libipsec_stub.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -c -o hip-libipsec_stub.obj `if test -f 'usermode/libipsec_stub.c'; then $(CYGPATH_W) 'usermode/libipsec_stub.c'; else $(CYGPATH_W) '$(srcdir)/usermode/libipsec_stub.c'; fi`
 
 hip-hip_esp.o: usermode/hip_esp.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -MT hip-hip_esp.o -MD -MP -MF $(DEPDIR)/hip-hip_esp.Tpo -c -o hip-hip_esp.o `test -f 'usermode/hip_esp.c' || echo '$(srcdir)/'`usermode/hip_esp.c
@@ -829,202 +768,6 @@ hip-hip_endbox.obj: usermode/hip_endbox.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hip_CFLAGS) $(CFLAGS) -c -o hip-hip_endbox.obj `if test -f 'usermode/hip_endbox.c'; then $(CYGPATH_W) 'usermode/hip_endbox.c'; else $(CYGPATH_W) '$(srcdir)/usermode/hip_endbox.c'; fi`
 
-hip_addr.o: protocol/hip_addr.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_addr.o -MD -MP -MF $(DEPDIR)/hip_addr.Tpo -c -o hip_addr.o `test -f 'protocol/hip_addr.c' || echo '$(srcdir)/'`protocol/hip_addr.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_addr.Tpo $(DEPDIR)/hip_addr.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_addr.c' object='hip_addr.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_addr.o `test -f 'protocol/hip_addr.c' || echo '$(srcdir)/'`protocol/hip_addr.c
-
-hip_addr.obj: protocol/hip_addr.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_addr.obj -MD -MP -MF $(DEPDIR)/hip_addr.Tpo -c -o hip_addr.obj `if test -f 'protocol/hip_addr.c'; then $(CYGPATH_W) 'protocol/hip_addr.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_addr.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_addr.Tpo $(DEPDIR)/hip_addr.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_addr.c' object='hip_addr.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_addr.obj `if test -f 'protocol/hip_addr.c'; then $(CYGPATH_W) 'protocol/hip_addr.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_addr.c'; fi`
-
-hip_cache.o: protocol/hip_cache.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_cache.o -MD -MP -MF $(DEPDIR)/hip_cache.Tpo -c -o hip_cache.o `test -f 'protocol/hip_cache.c' || echo '$(srcdir)/'`protocol/hip_cache.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_cache.Tpo $(DEPDIR)/hip_cache.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_cache.c' object='hip_cache.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_cache.o `test -f 'protocol/hip_cache.c' || echo '$(srcdir)/'`protocol/hip_cache.c
-
-hip_cache.obj: protocol/hip_cache.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_cache.obj -MD -MP -MF $(DEPDIR)/hip_cache.Tpo -c -o hip_cache.obj `if test -f 'protocol/hip_cache.c'; then $(CYGPATH_W) 'protocol/hip_cache.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_cache.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_cache.Tpo $(DEPDIR)/hip_cache.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_cache.c' object='hip_cache.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_cache.obj `if test -f 'protocol/hip_cache.c'; then $(CYGPATH_W) 'protocol/hip_cache.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_cache.c'; fi`
-
-hip_dht.o: protocol/hip_dht.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_dht.o -MD -MP -MF $(DEPDIR)/hip_dht.Tpo -c -o hip_dht.o `test -f 'protocol/hip_dht.c' || echo '$(srcdir)/'`protocol/hip_dht.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_dht.Tpo $(DEPDIR)/hip_dht.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_dht.c' object='hip_dht.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_dht.o `test -f 'protocol/hip_dht.c' || echo '$(srcdir)/'`protocol/hip_dht.c
-
-hip_dht.obj: protocol/hip_dht.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_dht.obj -MD -MP -MF $(DEPDIR)/hip_dht.Tpo -c -o hip_dht.obj `if test -f 'protocol/hip_dht.c'; then $(CYGPATH_W) 'protocol/hip_dht.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_dht.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_dht.Tpo $(DEPDIR)/hip_dht.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_dht.c' object='hip_dht.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_dht.obj `if test -f 'protocol/hip_dht.c'; then $(CYGPATH_W) 'protocol/hip_dht.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_dht.c'; fi`
-
-hip_globals.o: protocol/hip_globals.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_globals.o -MD -MP -MF $(DEPDIR)/hip_globals.Tpo -c -o hip_globals.o `test -f 'protocol/hip_globals.c' || echo '$(srcdir)/'`protocol/hip_globals.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_globals.Tpo $(DEPDIR)/hip_globals.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_globals.c' object='hip_globals.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_globals.o `test -f 'protocol/hip_globals.c' || echo '$(srcdir)/'`protocol/hip_globals.c
-
-hip_globals.obj: protocol/hip_globals.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_globals.obj -MD -MP -MF $(DEPDIR)/hip_globals.Tpo -c -o hip_globals.obj `if test -f 'protocol/hip_globals.c'; then $(CYGPATH_W) 'protocol/hip_globals.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_globals.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_globals.Tpo $(DEPDIR)/hip_globals.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_globals.c' object='hip_globals.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_globals.obj `if test -f 'protocol/hip_globals.c'; then $(CYGPATH_W) 'protocol/hip_globals.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_globals.c'; fi`
-
-hip_input.o: protocol/hip_input.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_input.o -MD -MP -MF $(DEPDIR)/hip_input.Tpo -c -o hip_input.o `test -f 'protocol/hip_input.c' || echo '$(srcdir)/'`protocol/hip_input.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_input.Tpo $(DEPDIR)/hip_input.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_input.c' object='hip_input.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_input.o `test -f 'protocol/hip_input.c' || echo '$(srcdir)/'`protocol/hip_input.c
-
-hip_input.obj: protocol/hip_input.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_input.obj -MD -MP -MF $(DEPDIR)/hip_input.Tpo -c -o hip_input.obj `if test -f 'protocol/hip_input.c'; then $(CYGPATH_W) 'protocol/hip_input.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_input.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_input.Tpo $(DEPDIR)/hip_input.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_input.c' object='hip_input.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_input.obj `if test -f 'protocol/hip_input.c'; then $(CYGPATH_W) 'protocol/hip_input.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_input.c'; fi`
-
-hip_ipsec.o: protocol/hip_ipsec.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_ipsec.o -MD -MP -MF $(DEPDIR)/hip_ipsec.Tpo -c -o hip_ipsec.o `test -f 'protocol/hip_ipsec.c' || echo '$(srcdir)/'`protocol/hip_ipsec.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_ipsec.Tpo $(DEPDIR)/hip_ipsec.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_ipsec.c' object='hip_ipsec.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_ipsec.o `test -f 'protocol/hip_ipsec.c' || echo '$(srcdir)/'`protocol/hip_ipsec.c
-
-hip_ipsec.obj: protocol/hip_ipsec.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_ipsec.obj -MD -MP -MF $(DEPDIR)/hip_ipsec.Tpo -c -o hip_ipsec.obj `if test -f 'protocol/hip_ipsec.c'; then $(CYGPATH_W) 'protocol/hip_ipsec.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_ipsec.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_ipsec.Tpo $(DEPDIR)/hip_ipsec.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_ipsec.c' object='hip_ipsec.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_ipsec.obj `if test -f 'protocol/hip_ipsec.c'; then $(CYGPATH_W) 'protocol/hip_ipsec.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_ipsec.c'; fi`
-
-hip_keymat.o: protocol/hip_keymat.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_keymat.o -MD -MP -MF $(DEPDIR)/hip_keymat.Tpo -c -o hip_keymat.o `test -f 'protocol/hip_keymat.c' || echo '$(srcdir)/'`protocol/hip_keymat.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_keymat.Tpo $(DEPDIR)/hip_keymat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_keymat.c' object='hip_keymat.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_keymat.o `test -f 'protocol/hip_keymat.c' || echo '$(srcdir)/'`protocol/hip_keymat.c
-
-hip_keymat.obj: protocol/hip_keymat.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_keymat.obj -MD -MP -MF $(DEPDIR)/hip_keymat.Tpo -c -o hip_keymat.obj `if test -f 'protocol/hip_keymat.c'; then $(CYGPATH_W) 'protocol/hip_keymat.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_keymat.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_keymat.Tpo $(DEPDIR)/hip_keymat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_keymat.c' object='hip_keymat.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_keymat.obj `if test -f 'protocol/hip_keymat.c'; then $(CYGPATH_W) 'protocol/hip_keymat.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_keymat.c'; fi`
-
-hip_main.o: protocol/hip_main.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_main.o -MD -MP -MF $(DEPDIR)/hip_main.Tpo -c -o hip_main.o `test -f 'protocol/hip_main.c' || echo '$(srcdir)/'`protocol/hip_main.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_main.Tpo $(DEPDIR)/hip_main.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_main.c' object='hip_main.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_main.o `test -f 'protocol/hip_main.c' || echo '$(srcdir)/'`protocol/hip_main.c
-
-hip_main.obj: protocol/hip_main.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_main.obj -MD -MP -MF $(DEPDIR)/hip_main.Tpo -c -o hip_main.obj `if test -f 'protocol/hip_main.c'; then $(CYGPATH_W) 'protocol/hip_main.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_main.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_main.Tpo $(DEPDIR)/hip_main.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_main.c' object='hip_main.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_main.obj `if test -f 'protocol/hip_main.c'; then $(CYGPATH_W) 'protocol/hip_main.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_main.c'; fi`
-
-hip_output.o: protocol/hip_output.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_output.o -MD -MP -MF $(DEPDIR)/hip_output.Tpo -c -o hip_output.o `test -f 'protocol/hip_output.c' || echo '$(srcdir)/'`protocol/hip_output.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_output.Tpo $(DEPDIR)/hip_output.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_output.c' object='hip_output.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_output.o `test -f 'protocol/hip_output.c' || echo '$(srcdir)/'`protocol/hip_output.c
-
-hip_output.obj: protocol/hip_output.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_output.obj -MD -MP -MF $(DEPDIR)/hip_output.Tpo -c -o hip_output.obj `if test -f 'protocol/hip_output.c'; then $(CYGPATH_W) 'protocol/hip_output.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_output.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_output.Tpo $(DEPDIR)/hip_output.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_output.c' object='hip_output.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_output.obj `if test -f 'protocol/hip_output.c'; then $(CYGPATH_W) 'protocol/hip_output.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_output.c'; fi`
-
-hip_status.o: protocol/hip_status.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_status.o -MD -MP -MF $(DEPDIR)/hip_status.Tpo -c -o hip_status.o `test -f 'protocol/hip_status.c' || echo '$(srcdir)/'`protocol/hip_status.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_status.Tpo $(DEPDIR)/hip_status.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_status.c' object='hip_status.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_status.o `test -f 'protocol/hip_status.c' || echo '$(srcdir)/'`protocol/hip_status.c
-
-hip_status.obj: protocol/hip_status.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_status.obj -MD -MP -MF $(DEPDIR)/hip_status.Tpo -c -o hip_status.obj `if test -f 'protocol/hip_status.c'; then $(CYGPATH_W) 'protocol/hip_status.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_status.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_status.Tpo $(DEPDIR)/hip_status.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_status.c' object='hip_status.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_status.obj `if test -f 'protocol/hip_status.c'; then $(CYGPATH_W) 'protocol/hip_status.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_status.c'; fi`
-
-hip_util.o: util/hip_util.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_util.o -MD -MP -MF $(DEPDIR)/hip_util.Tpo -c -o hip_util.o `test -f 'util/hip_util.c' || echo '$(srcdir)/'`util/hip_util.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_util.Tpo $(DEPDIR)/hip_util.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='util/hip_util.c' object='hip_util.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_util.o `test -f 'util/hip_util.c' || echo '$(srcdir)/'`util/hip_util.c
-
-hip_util.obj: util/hip_util.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_util.obj -MD -MP -MF $(DEPDIR)/hip_util.Tpo -c -o hip_util.obj `if test -f 'util/hip_util.c'; then $(CYGPATH_W) 'util/hip_util.c'; else $(CYGPATH_W) '$(srcdir)/util/hip_util.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_util.Tpo $(DEPDIR)/hip_util.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='util/hip_util.c' object='hip_util.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_util.obj `if test -f 'util/hip_util.c'; then $(CYGPATH_W) 'util/hip_util.c'; else $(CYGPATH_W) '$(srcdir)/util/hip_util.c'; fi`
-
-hip_xml.o: util/hip_xml.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_xml.o -MD -MP -MF $(DEPDIR)/hip_xml.Tpo -c -o hip_xml.o `test -f 'util/hip_xml.c' || echo '$(srcdir)/'`util/hip_xml.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_xml.Tpo $(DEPDIR)/hip_xml.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='util/hip_xml.c' object='hip_xml.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_xml.o `test -f 'util/hip_xml.c' || echo '$(srcdir)/'`util/hip_xml.c
-
-hip_xml.obj: util/hip_xml.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_xml.obj -MD -MP -MF $(DEPDIR)/hip_xml.Tpo -c -o hip_xml.obj `if test -f 'util/hip_xml.c'; then $(CYGPATH_W) 'util/hip_xml.c'; else $(CYGPATH_W) '$(srcdir)/util/hip_xml.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_xml.Tpo $(DEPDIR)/hip_xml.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='util/hip_xml.c' object='hip_xml.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_xml.obj `if test -f 'util/hip_xml.c'; then $(CYGPATH_W) 'util/hip_xml.c'; else $(CYGPATH_W) '$(srcdir)/util/hip_xml.c'; fi`
-
-hip_cfg_api.o: util/cfg-api/hip_cfg_api.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_cfg_api.o -MD -MP -MF $(DEPDIR)/hip_cfg_api.Tpo -c -o hip_cfg_api.o `test -f 'util/cfg-api/hip_cfg_api.c' || echo '$(srcdir)/'`util/cfg-api/hip_cfg_api.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_cfg_api.Tpo $(DEPDIR)/hip_cfg_api.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='util/cfg-api/hip_cfg_api.c' object='hip_cfg_api.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_cfg_api.o `test -f 'util/cfg-api/hip_cfg_api.c' || echo '$(srcdir)/'`util/cfg-api/hip_cfg_api.c
-
-hip_cfg_api.obj: util/cfg-api/hip_cfg_api.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_cfg_api.obj -MD -MP -MF $(DEPDIR)/hip_cfg_api.Tpo -c -o hip_cfg_api.obj `if test -f 'util/cfg-api/hip_cfg_api.c'; then $(CYGPATH_W) 'util/cfg-api/hip_cfg_api.c'; else $(CYGPATH_W) '$(srcdir)/util/cfg-api/hip_cfg_api.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_cfg_api.Tpo $(DEPDIR)/hip_cfg_api.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='util/cfg-api/hip_cfg_api.c' object='hip_cfg_api.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_cfg_api.obj `if test -f 'util/cfg-api/hip_cfg_api.c'; then $(CYGPATH_W) 'util/cfg-api/hip_cfg_api.c'; else $(CYGPATH_W) '$(srcdir)/util/cfg-api/hip_cfg_api.c'; fi`
-
-hip_linux_main.o: linux/hip_linux_main.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_linux_main.o -MD -MP -MF $(DEPDIR)/hip_linux_main.Tpo -c -o hip_linux_main.o `test -f 'linux/hip_linux_main.c' || echo '$(srcdir)/'`linux/hip_linux_main.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_linux_main.Tpo $(DEPDIR)/hip_linux_main.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='linux/hip_linux_main.c' object='hip_linux_main.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_linux_main.o `test -f 'linux/hip_linux_main.c' || echo '$(srcdir)/'`linux/hip_linux_main.c
-
-hip_linux_main.obj: linux/hip_linux_main.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hip_linux_main.obj -MD -MP -MF $(DEPDIR)/hip_linux_main.Tpo -c -o hip_linux_main.obj `if test -f 'linux/hip_linux_main.c'; then $(CYGPATH_W) 'linux/hip_linux_main.c'; else $(CYGPATH_W) '$(srcdir)/linux/hip_linux_main.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hip_linux_main.Tpo $(DEPDIR)/hip_linux_main.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='linux/hip_linux_main.c' object='hip_linux_main.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hip_linux_main.obj `if test -f 'linux/hip_linux_main.c'; then $(CYGPATH_W) 'linux/hip_linux_main.c'; else $(CYGPATH_W) '$(srcdir)/linux/hip_linux_main.c'; fi`
-
 hipstatus-usermode-status.o: util/usermode-status.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hipstatus_CFLAGS) $(CFLAGS) -MT hipstatus-usermode-status.o -MD -MP -MF $(DEPDIR)/hipstatus-usermode-status.Tpo -c -o hipstatus-usermode-status.o `test -f 'util/usermode-status.c' || echo '$(srcdir)/'`util/usermode-status.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hipstatus-usermode-status.Tpo $(DEPDIR)/hipstatus-usermode-status.Po
@@ -1080,20 +823,6 @@ hitgen-hip_globals.obj: protocol/hip_globals.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='protocol/hip_globals.c' object='hitgen-hip_globals.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hitgen_CFLAGS) $(CFLAGS) -c -o hitgen-hip_globals.obj `if test -f 'protocol/hip_globals.c'; then $(CYGPATH_W) 'protocol/hip_globals.c'; else $(CYGPATH_W) '$(srcdir)/protocol/hip_globals.c'; fi`
-
-hitgen-sc_utils.o: util/sc_utils.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hitgen_CFLAGS) $(CFLAGS) -MT hitgen-sc_utils.o -MD -MP -MF $(DEPDIR)/hitgen-sc_utils.Tpo -c -o hitgen-sc_utils.o `test -f 'util/sc_utils.c' || echo '$(srcdir)/'`util/sc_utils.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hitgen-sc_utils.Tpo $(DEPDIR)/hitgen-sc_utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='util/sc_utils.c' object='hitgen-sc_utils.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hitgen_CFLAGS) $(CFLAGS) -c -o hitgen-sc_utils.o `test -f 'util/sc_utils.c' || echo '$(srcdir)/'`util/sc_utils.c
-
-hitgen-sc_utils.obj: util/sc_utils.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hitgen_CFLAGS) $(CFLAGS) -MT hitgen-sc_utils.obj -MD -MP -MF $(DEPDIR)/hitgen-sc_utils.Tpo -c -o hitgen-sc_utils.obj `if test -f 'util/sc_utils.c'; then $(CYGPATH_W) 'util/sc_utils.c'; else $(CYGPATH_W) '$(srcdir)/util/sc_utils.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/hitgen-sc_utils.Tpo $(DEPDIR)/hitgen-sc_utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='util/sc_utils.c' object='hitgen-sc_utils.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hitgen_CFLAGS) $(CFLAGS) -c -o hitgen-sc_utils.obj `if test -f 'util/sc_utils.c'; then $(CYGPATH_W) 'util/sc_utils.c'; else $(CYGPATH_W) '$(srcdir)/util/sc_utils.c'; fi`
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
@@ -1230,6 +959,98 @@ GTAGS:
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 
+check-TESTS: $(TESTS)
+	@failed=0; all=0; xfail=0; xpass=0; skip=0; \
+	srcdir=$(srcdir); export srcdir; \
+	list=' $(TESTS) '; \
+	$(am__tty_colors); \
+	if test -n "$$list"; then \
+	  for tst in $$list; do \
+	    if test -f ./$$tst; then dir=./; \
+	    elif test -f $$tst; then dir=; \
+	    else dir="$(srcdir)/"; fi; \
+	    if $(TESTS_ENVIRONMENT) $${dir}$$tst; then \
+	      all=`expr $$all + 1`; \
+	      case " $(XFAIL_TESTS) " in \
+	      *[\ \	]$$tst[\ \	]*) \
+		xpass=`expr $$xpass + 1`; \
+		failed=`expr $$failed + 1`; \
+		col=$$red; res=XPASS; \
+	      ;; \
+	      *) \
+		col=$$grn; res=PASS; \
+	      ;; \
+	      esac; \
+	    elif test $$? -ne 77; then \
+	      all=`expr $$all + 1`; \
+	      case " $(XFAIL_TESTS) " in \
+	      *[\ \	]$$tst[\ \	]*) \
+		xfail=`expr $$xfail + 1`; \
+		col=$$lgn; res=XFAIL; \
+	      ;; \
+	      *) \
+		failed=`expr $$failed + 1`; \
+		col=$$red; res=FAIL; \
+	      ;; \
+	      esac; \
+	    else \
+	      skip=`expr $$skip + 1`; \
+	      col=$$blu; res=SKIP; \
+	    fi; \
+	    echo "$${col}$$res$${std}: $$tst"; \
+	  done; \
+	  if test "$$all" -eq 1; then \
+	    tests="test"; \
+	    All=""; \
+	  else \
+	    tests="tests"; \
+	    All="All "; \
+	  fi; \
+	  if test "$$failed" -eq 0; then \
+	    if test "$$xfail" -eq 0; then \
+	      banner="$$All$$all $$tests passed"; \
+	    else \
+	      if test "$$xfail" -eq 1; then failures=failure; else failures=failures; fi; \
+	      banner="$$All$$all $$tests behaved as expected ($$xfail expected $$failures)"; \
+	    fi; \
+	  else \
+	    if test "$$xpass" -eq 0; then \
+	      banner="$$failed of $$all $$tests failed"; \
+	    else \
+	      if test "$$xpass" -eq 1; then passes=pass; else passes=passes; fi; \
+	      banner="$$failed of $$all $$tests did not behave as expected ($$xpass unexpected $$passes)"; \
+	    fi; \
+	  fi; \
+	  dashes="$$banner"; \
+	  skipped=""; \
+	  if test "$$skip" -ne 0; then \
+	    if test "$$skip" -eq 1; then \
+	      skipped="($$skip test was not run)"; \
+	    else \
+	      skipped="($$skip tests were not run)"; \
+	    fi; \
+	    test `echo "$$skipped" | wc -c` -le `echo "$$banner" | wc -c` || \
+	      dashes="$$skipped"; \
+	  fi; \
+	  report=""; \
+	  if test "$$failed" -ne 0 && test -n "$(PACKAGE_BUGREPORT)"; then \
+	    report="Please report to $(PACKAGE_BUGREPORT)"; \
+	    test `echo "$$report" | wc -c` -le `echo "$$banner" | wc -c` || \
+	      dashes="$$report"; \
+	  fi; \
+	  dashes=`echo "$$dashes" | sed s/./=/g`; \
+	  if test "$$failed" -eq 0; then \
+	    echo "$$grn$$dashes"; \
+	  else \
+	    echo "$$red$$dashes"; \
+	  fi; \
+	  echo "$$banner"; \
+	  test -z "$$skipped" || echo "$$skipped"; \
+	  test -z "$$report" || echo "$$report"; \
+	  echo "$$dashes$$std"; \
+	  test "$$failed" -eq 0; \
+	else :; fi
+
 distdir: $(DISTFILES)
 	@srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
@@ -1289,6 +1110,7 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
+	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: check-recursive
 all-am: Makefile $(PROGRAMS)
 installdirs: installdirs-recursive
@@ -1317,6 +1139,7 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -1391,11 +1214,12 @@ ps-am:
 
 uninstall-am: uninstall-sbinPROGRAMS
 
-.MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) ctags-recursive \
-	install-am install-data-am install-strip tags-recursive
+.MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) check-am \
+	ctags-recursive install-am install-data-am install-strip \
+	tags-recursive
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
-	all all-am check check-am clean clean-generic \
+	all all-am check check-TESTS check-am clean clean-generic \
 	clean-sbinPROGRAMS ctags ctags-recursive distclean \
 	distclean-compile distclean-generic distclean-tags distdir dvi \
 	dvi-am html html-am info info-am install install-am \
@@ -1409,6 +1233,10 @@ uninstall-am: uninstall-sbinPROGRAMS
 	mostlyclean-generic pdf pdf-am ps ps-am tags tags-recursive \
 	uninstall uninstall-am uninstall-sbinPROGRAMS
 
+
+.PHONY : shell
+shell:
+	python $(scriptdir)/hiptest.py shell
 
 # this would be nice to use, but it overwrites the file upon 'make install'
 #dist_sysconf_DATA = ../conf/known_host_identities.xml

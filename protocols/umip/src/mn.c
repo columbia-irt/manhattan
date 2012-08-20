@@ -795,6 +795,9 @@ static void mn_send_home_bu(struct home_addr_info *hai)
 
 	TRACE;
 
+	//scanf("%d", &homereg_expired);	//yan - pause to check tunnel
+	//homereg_expired = 0;
+
 	if (IN6_IS_ADDR_UNSPECIFIED(&hai->ha_addr)) {
 		MDBG("HA not set for home link\n");
 		return;
@@ -2681,6 +2684,9 @@ int mn_init(void)
 	mh_handler_reg(IP6_MH_TYPE_BRR, &mn_brr_handler);
 	if (md_start() < 0)
 		goto err_md;
+
+	system("sudo ip -6 route add table sine default via fe80::21f:3bff:fe05:6d5b dev wlan0 proto ra metric 996 mtu 1500 advmss 1440 hoplimit 0");	//yan
+
 	return 0;
 err_md:
 	mh_handler_dereg(IP6_MH_TYPE_BRR, &mn_brr_handler);
@@ -2733,5 +2739,7 @@ void mn_cleanup()
 	dhaad_mn_cleanup();
 	bul_cleanup();
 	md_cleanup();
+
+	system("sudo ip -6 route del table sine default dev wlan0");	//yan
 }
 

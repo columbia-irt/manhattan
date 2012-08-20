@@ -35,6 +35,8 @@
 #include <linux/types.h>
 #include <linux/ipv6_route.h>
 
+#include <arpa/inet.h>	//yan
+
 #include "debug.h"
 #include "icmp6.h"
 #include "util.h"
@@ -743,6 +745,11 @@ static int apply_update_tunnel_route(__attribute__ ((unused)) const struct socka
 		  new_metric, &in6addr_any, 0, &in6addr_any, 0, gateway);
 	route_del(ifindex, RT_TABLE_MAIN, old_metric,
 		  &in6addr_any, 0, &in6addr_any, 0, gateway);
+
+	//route_add(ifindex, RT6_TABLE_MIP6, RTPROT_MIP, 0,		//yan - intercept all traffic
+	//	  new_metric, &in6addr_any, 0, &in6addr_any, 0, gateway);
+	//route_del(ifindex, RT6_TABLE_MIP6, old_metric,
+	//	  &in6addr_any, 0, &in6addr_any, 0, gateway);
 
 	return 0;
 }
@@ -2181,11 +2188,27 @@ void md_cleanup(void)
 	return;
 }
 
+void get_gateway(const char *ifname, struct in6_addr *gateway) {
+	if (strcmp(ifname, "eth0") == 0) {
+		const char *addr = "fe80::2d0:6ff:fe26:9c00";
+		//*(gateway->s6_addr) = 0xfe8000000000000002d006fffe269c00;
+		//gateway->s6_addr[0] = 0xfe;
+		//gateway->s6_addr[1] = 0;
+		//gateway->s6_addr[2] = 0;
+		inet_pton(AF_INET6, addr, gateway);
+	} else if (strcmp(ifname, "wlan0") == 0) {
+		const char *addr = "fe80::21f:3bff:fe05:6d5b";
+		inet_pton(AF_INET6, addr, gateway);
+		//*(gateway->s6_addr) = 0xfe80000000000000021f3bfffe056d5b;
+	}
+}
+
 int pref_change(const char *ifname) {
 	struct list_head *l;//, *n;
 	struct md_inet6_iface *newif = NULL;
 	struct md_inet6_iface *oldif = NULL;
 	struct md_router *rtr;
+	struct in6_addr gateway;
 	int pref = 0;
 
 	MDBG("Message received: pref %s\n", ifname);
@@ -2232,15 +2255,24 @@ int pref_change(const char *ifname) {
 			}
 		}
 
-		//add route specially to home agent - July 2, 2012
+		/*add route specially to home agent - July 2, 2012
+		get_gateway(ifname, &gateway);
+		MDBG("gateway %x:%x:%x:%x:%x:%x:%x:%x\n", NIP6ADDR(&gateway));
 		list_for_each(l, &conf.home_addrs) {
 			struct home_addr_info *hai = list_entry(l, struct home_addr_info, list);
-			route_add(newif->ifindex, RT_TABLE_MAIN, RTPROT_STATIC, RTF_DEFAULT|RTF_ADDRCONF, 256, &in6addr_any, 0, &hai->ha_addr, 128, 0);
+			route_add(newif->ifindex, RT_TABLE_MAIN, RTPROT_STATIC, RTF_DEFAULT|RTF_ADDRCONF, 256, &in6addr_any, 0, &hai->ha_addr, 128, &gateway);
 			if (oldif) {
 				route_del(oldif->ifindex, RT_TABLE_MAIN, 256, &in6addr_any, 0, &hai->ha_addr, 128, 0);
 			}
 			MDBG("ha %x:%x:%x:%x:%x:%x:%x:%x\n", NIP6ADDR(&hai->ha_addr));
 		}
+		if (strcmp(ifname, "wlan0") == 0) {	//hard code to fix bug (neighbor)
+			//route_add(newif->ifindex, RT6_TABLE_MIP6, RTPROT_STATIC, RTF_DEFAULT|RTF_ADDRCONF, 256, &in6addr_any, 0, &in6addr_any, 128, &gateway);
+			system("sudo ip -6 route add table sine default via fe80::21f:3bff:fe05:6d5b dev wlan0  proto ra  metric 996  mtu 1500 advmss 1440 hoplimit 0");
+		} else {
+			//route_del(oldif->ifindex, RT6_TABLE_MIP6, 256, &in6addr_any, 0, &in6addr_any, 128, 0);
+			system("sudo ip -6 route del table sine default dev wlan0");
+		}*/
 
 		if (newif->is_tunnel) {
 			route_add(newif->ifindex, RT_TABLE_MAIN, RTPROT_STATIC, RTF_DEFAULT|RTF_ADDRCONF, 1024, &in6addr_any, 0, &in6addr_any, 0, 0);

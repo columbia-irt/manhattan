@@ -1,0 +1,577 @@
+#!/bin/bash
+
+echo
+echo "Start patching..."
+
+if grep -Fq "//yan-begin" ../openhip/src/include/hip/hip_globals.h
+then
+	echo "../openhip/src/include/hip/hip_globals.h already patched!"
+else
+	echo "../openhip/src/include/hip/hip_globals.h:"
+
+	echo "cat ./hip_globals_sine.h >> ../openhip/src/include/hip/hip_globals.h"
+	cat ./hip_globals_sine.h >> ../openhip/src/include/hip/hip_globals.h
+
+	echo
+fi
+
+if grep -Fq "//yan-begin" ../openhip/src/protocol/hip_main.c
+then
+	echo "../openhip/src/include/hip/hip_main.c already patched!"
+else
+	echo "../openhip/src/include/hip/hip_main.c:"
+
+	echo -e "sed -i '/int main(/i\\ \n\
+//yan-begin\\ \n\
+pthread_t pref_thread = 0; //Apr 10 2012\\ \n\
+//yan-end\n\
+	' ../openhip/src/protocol/hip_main.c"
+	sed -i '/int main(/i\
+//yan-begin\
+pthread_t pref_thread = 0; //Apr 10 2012\
+//yan-end
+		' ../openhip/src/protocol/hip_main.c
+
+	echo -e "sed -i '/int main_loop(int argc,/{n;a\\ \n\
+	//yan-begin\\ \n\
+	int preferences = IPV6_PREFER_SRC_COA;  //get rid of home address\\ \n\
+	//yan-end\n\
+	}' ../openhip/src/protocol/hip_main.c"
+	sed -i '/int main_loop(int argc,/{n;a\
+	//yan-begin\
+	int preferences = IPV6_PREFER_SRC_COA;  //get rid of home address\
+	//yan-end
+		}' ../openhip/src/protocol/hip_main.c
+
+	echo -e "sed -i '/Initializing global variables/i\\ \n\
+	//yan-begin\\ \n\
+	pthread_create(&pref_thread, NULL, hip_pref_listener, NULL);\\ \n\
+	//yan-end\n\
+	}' ../openhip/src/protocol/hip_main.c"
+	sed -i '/Initializing global variables/i\
+	//yan-begin\
+	pthread_create(&pref_thread, NULL, hip_pref_listener, NULL);\
+	//yan-end
+		' ../openhip/src/protocol/hip_main.c
+
+	echo -e "sed -i '/setsockopt(s6_hip, IPPROTO_IPV6, IPV6_RECVPKTINFO/{n;a\\ \n\
+	//yan-begin\\ \n\
+	setsockopt(s6_hip, IPPROTO_IPV6, IPV6_ADDR_PREFERENCES,\\ \n\
+		   (void *) &preferences, sizeof(preferences));	//get rid of HoA\\ \n\
+	//yan-end\n\
+	}' ../openhip/src/protocol/hip_main.c"
+	sed -i '/setsockopt(s6_hip, IPPROTO_IPV6, IPV6_RECVPKTINFO/{n;a\
+	//yan-begin\
+	setsockopt(s6_hip, IPPROTO_IPV6, IPV6_ADDR_PREFERENCES,\
+		   (void *) &preferences, sizeof(preferences));	//get rid of HoA\
+	//yan-end
+		}' ../openhip/src/protocol/hip_main.c
+
+	echo
+fi
+
+if grep -Fq "//yan-begin" ../openhip/src/protocol/hip_addr.c
+then
+	echo "../openhip/src/include/hip/hip_addr.c already patched!"
+else
+	echo "../openhip/src/include/hip/hip_addr.c:"
+
+	echo "sed -i '/Local definitions/a\\ \n\
+//yan-begin\\ \n\
+char hip_preferred_ifname[20] = {0};	//hard code max length of ifname\\ \n\
+char hip_current_ifname[20] = {0};      //change routing table in readdress\\ \n\
+volatile int prefer_changed = 0;\\ \n\
+pthread_mutex_t pref_mutex = PTHREAD_MUTEX_INITIALIZER;\\ \n\
+volatile int encrypt_off = 0;   //control encryption\\ \n\
+//yan-end\n\
+		' ../openhip/src/protocol/hip_addr.c"
+	sed -i '/Local definitions/a\
+//yan-begin\
+char hip_preferred_ifname[20] = {0};	//hard code max length of ifname\
+char hip_current_ifname[20] = {0};      //change routing table in readdress\
+volatile int prefer_changed = 0;\
+pthread_mutex_t pref_mutex = PTHREAD_MUTEX_INITIALIZER;\
+volatile int encrypt_off = 0;   //control encryption\
+//yan-end
+		' ../openhip/src/protocol/hip_addr.c
+
+	echo -e "sed -i '/first check for preferred from conf file/i\\ \n\
+	//yan-begin\\ \n\
+	if (hip_preferred_ifname[0] != 0)       //preferred ifname set\\ \n\
+		preferred_iface_index = devname_to_index(hip_preferred_ifname,\\ \n\
+							 NULL);\\ \n\
+	//yan-end\n\
+	' ../openhip/src/protocol/hip_addr.c"
+	sed -i '/first check for preferred from conf file/i\
+	//yan-begin\
+	l = NULL;\
+	if (hip_preferred_ifname[0] != 0)       //preferred ifname set\
+		preferred_iface_index = devname_to_index(hip_preferred_ifname,\
+							 NULL);\
+	//yan-end
+		' ../openhip/src/protocol/hip_addr.c
+
+	echo -e "sed -i '/preferred interface next priority/,/preferred address (conf/ {\n\
+		/AF_INET/i\\ \n\
+			//yan-begin\\ \n\
+#if (IP_VERSION == 6)\\ \n\
+			//IPv6 - May 29, 2012\\ \n\
+			if ((l->addr.ss_family != AF_INET6) ||\\ \n\
+				(IN6_IS_ADDR_LINKLOCAL(SA2IP6(&l->addr)) ||\\ \n\
+				 IN6_IS_ADDR_SITELOCAL(SA2IP6(&l->addr)) ||\\ \n\
+				 IN6_IS_ADDR_MULTICAST(SA2IP6(&l->addr))))\\ \n\
+				continue;\\ \n\
+#else\\ \n\
+			//yan-end\n\
+		/IN_LOOP(/i\\ \n\
+			//yan-begin\\ \n\
+#endif\\ \n\
+			//yan-end\n\
+	}' ../openhip/src/protocol/hip_addr.c"
+	sed -i '/preferred interface next priority/,/preferred address (conf/ {
+			/AF_INET/i\
+			//yan-begin\
+#if (IP_VERSION == 6)\
+			//IPv6 - May 29, 2012\
+			if ((l->addr.ss_family != AF_INET6) ||\
+				(IN6_IS_ADDR_LINKLOCAL(SA2IP6(&l->addr)) ||\
+				 IN6_IS_ADDR_SITELOCAL(SA2IP6(&l->addr)) ||\
+				 IN6_IS_ADDR_MULTICAST(SA2IP6(&l->addr))))\
+				continue;\
+#else\
+			//yan-end
+			/IN_LOOP(/i\
+			//yan-begin\
+#endif\
+			//yan-end
+		}' ../openhip/src/protocol/hip_addr.c
+
+	echo -e "sed -i '/a preferred address has not been found yet/i\\ \n\
+	//yan-begin\\ \n\
+	if (prefer_changed && preferred_selected && l)  //triggered by pref_listening changing the routing table\\ \n\
+	{				//the first if is only for avoiding deadlock\\ \n\
+		log_(NORM, \"try to switch interfaces\\\\n\");\\ \n\
+		hip_handoff(l);\\ \n\
+	}\\ \n\
+	//yan-end\n\
+	' ../openhip/src/protocol/hip_addr.c"
+	sed -i '/a preferred address has not been found yet/i\
+	//yan-begin\
+	if (prefer_changed && preferred_selected && l)  //triggered by pref_listening changing the routing table\
+	{				//the first if is only for avoiding deadlock\
+		log_(NORM, "try to switch interfaces\\n");\
+		hip_handoff(l);\
+	}\
+	//yan-end
+		' ../openhip/src/protocol/hip_addr.c
+
+	echo -e "sed -i '/a preferred address has not been found yet/,/not find an address on the primary master interface/ {\n\
+		/preferred_selected/i\\ \n\
+//yan-begin\\ \n\
+/*\\ \n\
+//yan-end\n\
+		/apply few criteria/i\\ \n\
+//yan-begin\\ \n\
+*/\\ \n\
+//yan-end\n\
+		/apply few criteria/a\\ \n\
+//yan-begin\\ \n\
+/*\\ \n\
+//yan-end\n\
+		/on primary master/i\\ \n\
+//yan-begin\\ \n\
+*/\\ \n\
+//yan-end\n\
+		/on primary master/a\\ \n\
+//yan-begin\\ \n\
+/*\\ \n\
+//yan-end\n\
+		/check and skip any ignored address/i\\ \n\
+//yan-begin\\ \n\
+*/\\ \n\
+//yan-end\n\
+		/check and skip any ignored address/a\\ \n\
+//yan-begin\\ \n\
+/*\\ \n\
+//yan-end\n\
+		/autoconf addr/i\\ \n\
+//yan-begin\\ \n\
+*/\\ \n\
+//yan-end\n\
+		/autoconf addr/a\\ \n\
+//yan-begin\\ \n\
+/*\\ \n\
+//yan-end\n\
+		/^$/i\\ \n\
+//yan-begin\\ \n\
+*/\\ \n\
+//yan-end\n\
+	}' ../openhip/src/protocol/hip_addr.c"
+	sed -i '/a preferred address has not been found yet/,/not find an address on the primary master interface/ {
+			/preferred_selected/i\
+//yan-begin\
+/*\
+//yan-end
+			/apply few criteria/i\
+//yan-begin\
+*/\
+//yan-end
+			/apply few criteria/a\
+//yan-begin\
+/*\
+//yan-end
+			/on primary master/i\
+//yan-begin\
+*/\
+//yan-end
+			/on primary master/a\
+//yan-begin\
+/*\
+//yan-end
+			/check and skip any ignored address/i\
+//yan-begin\
+*/\
+//yan-end
+			/check and skip any ignored address/a\
+//yan-begin\
+/*\
+//yan-end
+			/autoconf addr/i\
+//yan-begin\
+*/\
+//yan-end
+			/autoconf addr/a\
+//yan-begin\
+/*\
+//yan-end
+			/^$/i\
+//yan-begin\
+*/\
+//yan-end
+		}' ../openhip/src/protocol/hip_addr.c
+
+	echo -e "sed -i '/int set_link_params/,/#endif/ {\n\
+		/#endif/i\\ \n\
+	//yan-begin\\ \n\
+	hip_sine_init();\\ \n\
+	//yan-end\n\
+	}' ../openhip/src/protocol/hip_addr.c"
+	sed -i '/int set_link_params/,/#endif/ {
+			/#endif/i\
+	//yan-begin\
+	hip_sine_init();\
+	//yan-end
+		}' ../openhip/src/protocol/hip_addr.c
+
+	echo -e "sed -i '/if (RTA_DATA(tb\[IFLA_IFNAME\]) && tb\[IFLA_ADDRESS\]/,/NLMSG_NEXT/ {\n\
+		/if (RTA_DATA(tb/i\\ \n\
+			//yan-begin\\ \n\
+			/*\\ \n\
+			//yan-end\n\
+		/NLMSG_NEXT/i\\ \n\
+			//yan-begin\\ \n\
+			*/\\ \n\
+			if (tb[IFLA_IFNAME] && RTA_DATA(tb[IFLA_IFNAME]) &&\\ \n\
+			    (strcmp(dev, RTA_DATA(tb[IFLA_IFNAME])) == 0)) {\\ \n\
+				if (mac && tb[IFLA_ADDRESS]) {\\ \n\
+					len = RTA_PAYLOAD(tb[IFLA_ADDRESS]);\\ \n\
+					if (len > 8) len = 8;\\ \n\
+					memcpy(mac, RTA_DATA(tb[IFLA_ADDRESS]), len);\\ \n\
+				}\\ \n\
+				ifindex = (ifi->ifi_index);\\ \n\
+			}\\ \n\
+			//yan-end\n\
+	}' ../openhip/src/protocol/hip_addr.c"
+	sed -i '/if (RTA_DATA(tb\[IFLA_IFNAME\]) && tb\[IFLA_ADDRESS\]/,/NLMSG_NEXT/ {
+			/if (RTA_DATA(tb/i\
+			//yan-begin\
+			/*\
+			//yan-end
+			/NLMSG_NEXT/i\
+			//yan-begin\
+			*/\
+			if (tb[IFLA_IFNAME] && RTA_DATA(tb[IFLA_IFNAME]) &&\
+			    (strcmp(dev, RTA_DATA(tb[IFLA_IFNAME])) == 0)) {\
+				if (mac && tb[IFLA_ADDRESS]) {\
+					len = RTA_PAYLOAD(tb[IFLA_ADDRESS]);\
+					if (len > 8) len = 8;\
+					memcpy(mac, RTA_DATA(tb[IFLA_ADDRESS]), len);\
+				}\
+				ifindex = (ifi->ifi_index);\
+			}\
+			//yan-end
+		}' ../openhip/src/protocol/hip_addr.c
+
+	echo -e "sed -i '/rebuild_sa(hip_a, newaddr, 0, FALSE, FALSE);/i\\ \n\
+	//yan-begin\\ \n\
+	//May 6, 2012 - added, change the routing table here\\ \n\
+	int err = 0;\\ \n\
+	char cmd[256] = {0};\\ \n\
+	if (hip_preferred_ifname[0] != 0) {\\ \n\
+		if (hip_current_ifname[0] != 0) {\\ \n\
+			sprintf(cmd, \"%ssudo ip -%d route flush table %s && \",\\ \n\
+				cmd, IP_VERSION, hip_current_ifname);\\ \n\
+		}\\ \n\
+		sprintf(cmd, \"%ssudo ip -%d route add table %s %s%s dev %s\",// src %s\",\\ \n\
+			cmd, IP_VERSION, hip_preferred_ifname, DEST_ADDR,\\ \n\
+			get_router_str(hip_preferred_ifname),\\ \n\
+			hip_preferred_ifname);//, logaddr(newaddr));\\ \n\
+		log_(NORM, \"route change: %s\\\\n\", cmd);\\ \n\
+		err = system(cmd);\\ \n\
+		sprintf(hip_current_ifname, \"%s\", hip_preferred_ifname);\\ \n\
+	} else {\\ \n\
+		return;\\ \n\
+	}\\ \n\
+	//yan-end\n\
+	' ../openhip/src/protocol/hip_addr.c"
+	sed -i '/rebuild_sa(hip_a, newaddr, 0, FALSE, FALSE);/i\
+	//yan-begin\
+	//May 6, 2012 - added, change the routing table here\
+	int err = 0;\
+	char cmd[256] = {0};\
+	if (hip_preferred_ifname[0] != 0) {\
+		if (hip_current_ifname[0] != 0) {\
+			sprintf(cmd, "%ssudo ip -%d route flush table %s && ",\
+				cmd, IP_VERSION, hip_current_ifname);\
+		}\
+		sprintf(cmd, "%ssudo ip -%d route add table %s %s%s dev %s",// src %s",\
+			cmd, IP_VERSION, hip_preferred_ifname, DEST_ADDR,\
+			get_router_str(hip_preferred_ifname),\
+			hip_preferred_ifname);//, logaddr(newaddr));\
+		log_(NORM, "route change: %s\\n", cmd);\
+		err = system(cmd);\
+		sprintf(hip_current_ifname, "%s", hip_preferred_ifname);\
+	} else {\
+		return;\
+	}\
+	//yan-end
+		' ../openhip/src/protocol/hip_addr.c
+
+	echo -e "sed -i '/rebuild_sa_x2(hip_a, newsrcaddr, newdstaddr, 0, FALSE);/i\\ \n\
+	//yan-begin\\ \n\
+	//May 6, 2012 - return if no preferred interface set\\ \n\
+	if (hip_preferred_ifname[0] == 0) {\\ \n\
+		return;\\ \n\
+	}\\ \n\
+	//yan-end\n\
+	' ../openhip/src/protocol/hip_addr.c"
+	sed -i '/rebuild_sa_x2(hip_a, newsrcaddr, newdstaddr, 0, FALSE);/i\
+	//yan-begin\
+	//May 6, 2012 - return if no preferred interface set\
+	if (hip_preferred_ifname[0] == 0) {\
+		return;\
+	}\
+	//yan-end
+		' ../openhip/src/protocol/hip_addr.c
+
+	echo "cat ./hip_sine.c >> ../openhip/src/protocol/hip_addr.c"
+	cat ./hip_sine.c >> ../openhip/src/protocol/hip_addr.c
+
+	echo
+fi
+
+if grep -Fq "//yan-begin" ../openhip/src/util/hip_util.c
+then
+	echo "../openhip/src/util/hip_util.c already patched!"
+else
+	echo "../openhip/src/util/hip_util.c:"
+
+	echo -e "sed -i '/if (signal == SIGSEGV)/i\\ \n\
+	//yan-begin\\ \n\
+	if (pref_thread >= 0) pthread_cancel(pref_thread);\\ \n\
+	hip_sine_cleanup();\\ \n\
+	//yan-end\n\
+	' ../openhip/src/util/hip_util.c"
+	sed -i '/if (signal == SIGSEGV)/i\
+	//yan-begin\
+	if (pref_thread >= 0) pthread_cancel(pref_thread);\
+	hip_sine_cleanup();\
+	//yan-end
+		' ../openhip/src/util/hip_util.c
+
+	echo
+fi
+
+if grep -Fq "//yan-begin" ../openhip/src/protocol/hip_input.c
+then
+	echo "../openhip/src/protocol/hip_input.c already patched!"
+else
+	echo "../openhip/src/protocol/hip_input.c:"
+
+	echo -e "sed -i '/if ((hip_a->available_transforms >>/i\\ \n\
+		//yan-begin - control encryption\\ \n\
+		if (esp && encrypt_off &&\\ \n\
+		    (transform_id < ESP_NULL_HMAC_SHA1 ||\\ \n\
+		     transform_id > ESP_NULL_HMAC_MD5)) {\\ \n\
+			continue;\\ \n\
+		}\\ \n\
+		//yan-end\n\
+	' ../openhip/src/protocol/hip_input.c"
+	sed -i '/if ((hip_a->available_transforms >>/i\
+		//yan-begin - control encryption\
+		if (esp && encrypt_off &&\
+		    (transform_id < ESP_NULL_HMAC_SHA1 ||\
+		     transform_id > ESP_NULL_HMAC_MD5)) {\
+			continue;\
+		}\
+		//yan-end
+		' ../openhip/src/protocol/hip_input.c
+
+	echo
+fi
+
+if grep -Fq "//yan-begin" ../openhip/src/protocol/hip_output.c
+then
+	echo "../openhip/src/protocol/hip_output.c already patched!"
+else
+	echo "../openhip/src/protocol/hip_output.c:"
+
+	echo -e "sed -i '/int hip_send(/,/int hip_retransmit(/ {\n\
+		/(connect(/i\\ \n\
+	//yan-begin - get rid of HoA\\ \n\
+	int preferences = IPV6_PREFER_SRC_COA;\\ \n\
+	if (src->sa_family != AF_INET) {\\ \n\
+		if (setsockopt(s6_hip, IPPROTO_IPV6, IPV6_ADDR_PREFERENCES,\\ \n\
+				(void *) &preferences, sizeof(preferences)) < 0) {\\ \n\
+			log_(WARN, \"set coa address error: %s.\\\\n\", strerror(errno));\\ \n\
+			goto queue_retrans;\\ \n\
+		}\\ \n\
+	}\\ \n\
+	//yan-end\n\
+	}' ../openhip/src/protocol/hip_output.c"
+	sed -i '/int hip_send(/,/int hip_retransmit(/ {
+			/(connect(/i\
+	//yan-begin - get rid of HoA\
+	int preferences = IPV6_PREFER_SRC_COA;\
+	if (src->sa_family != AF_INET) {\
+		if (setsockopt(s6_hip, IPPROTO_IPV6, IPV6_ADDR_PREFERENCES,\
+				(void *) &preferences, sizeof(preferences)) < 0) {\
+			log_(WARN, "set coa address error: %s.\\n", strerror(errno));\
+			goto queue_retrans;\
+		}\
+	}\
+	//yan-end
+		}' ../openhip/src/protocol/hip_output.c
+
+	echo
+fi
+
+if grep -Fq "//yan-begin" ../openhip/src/usermode/hip_esp.c
+then
+	echo "../openhip/src/usermode/hip_esp.c already patched!"
+else
+	echo "../openhip/src/usermode/hip_esp.c:"
+
+	echo -e "sed -i '/void hip_esp_output(void/,/return(NULL)/ {\n\
+		/struct ip /a\\ \n\
+	//yan-begin\\ \n\
+	int preferences = IPV6_PREFER_SRC_COA;\\ \n\
+	//yan-end\n\
+		/s = s_esp6;/a\\ \n\
+			//yan-begin - get rid of HoA\\ \n\
+			if (setsockopt(s, IPPROTO_IPV6,\\ \n\
+					IPV6_ADDR_PREFERENCES,\\ \n\
+					(void *) &preferences,\\ \n\
+					sizeof(preferences)) < 0) {\\ \n\
+				printf(\"set coa address error: (%d) %s\\\\n\",\\ \n\
+					errno, strerror(errno));\\ \n\
+			}\\ \n\
+			//yan-end\n\
+	}' ../openhip/src/usermode/hip_esp.c"
+	sed -i '/void hip_esp_output(void/,/return(NULL)/ {
+			/struct ip /a\
+	//yan-begin\
+	int preferences = IPV6_PREFER_SRC_COA;\
+	//yan-end
+			/s = s_esp6;/a\
+			//yan-begin - get rid of HoA\
+			if (setsockopt(s, IPPROTO_IPV6,\
+					IPV6_ADDR_PREFERENCES,\
+					(void *) &preferences,\
+					sizeof(preferences)) < 0) {\
+				printf("set coa address error: (%d) %s\\n",\
+					errno, strerror(errno));\
+			}\
+			//yan-end
+		}' ../openhip/src/usermode/hip_esp.c
+
+	echo
+fi
+
+if grep -Fq "//yan-begin" ../openhip/src/usermode/hip_mr.c
+then
+	echo "../openhip/src/usermode/hip_mr.c already patched!"
+else
+	echo "../openhip/src/usermode/hip_mr.c:"
+
+	echo -e "sed -i '/void \*hip_mobile_router(void \*arg)$/{n;a\\ \n\
+	//yan-begin\\ \n\
+	int preferences = IPV6_PREFER_SRC_COA;\\ \n\
+	//yan-end\n\
+	}' ../openhip/src/usermode/hip_mr.c"
+	sed -i '/void \*hip_mobile_router(void \*arg)$/{n;a\
+	//yan-begin\
+	int preferences = IPV6_PREFER_SRC_COA;\
+	//yan-end
+		}' ../openhip/src/usermode/hip_mr.c
+
+	echo -e "sed -i '/raw_ip6_socket = socket(PF_INET6/,/\}/ {\n\
+		/\}/a\\ \n\
+	//yan-begin - get rid of HoA\\ \n\
+	setsockopt(raw_ip6_socket, IPPROTO_IPV6, IPV6_ADDR_PREFERENCES,\\ \n\
+		(void *) &preferences, sizeof(preferences));\\ \n\
+	//yan-end\n\
+	}' ../openhip/src/usermode/hip_mr.c"
+	sed -i '/raw_ip6_socket = socket(PF_INET6/,/\}/ {
+			/\}/a\
+	//yan-begin - get rid of HoA\
+	setsockopt(raw_ip6_socket, IPPROTO_IPV6, IPV6_ADDR_PREFERENCES,\
+		(void *) &preferences, sizeof(preferences));\
+	//yan-end
+		}' ../openhip/src/usermode/hip_mr.c
+
+	echo
+fi
+
+if grep -Fq "//yan-begin" ../openhip/src/usermode/hip_umh_main.c
+then
+	echo "../openhip/src/usermode/hip_umh_main.c already patched!"
+else
+	echo "../openhip/src/usermode/hip_umh_main.c:"
+
+	echo -e "sed -i '/int init_esp_input(/{n;a\\ \n\
+	//yan-begin\\ \n\
+	int preferences = IPV6_PREFER_SRC_COA;\\ \n\
+	//yan-end\n\
+	}' ../openhip/src/usermode/hip_umh_main.c"
+	sed -i '/int init_esp_input(/{n;a\
+	//yan-begin\
+	int preferences = IPV6_PREFER_SRC_COA;\
+	//yan-end
+		}' ../openhip/src/usermode/hip_umh_main.c
+
+	echo -e "sed -i '/return(s);/i\\ \n\
+	//yan-begin - get rid of HoA\\ \n\
+	if (family == AF_INET6 || family == PF_INET6) {\\ \n\
+		setsockopt(s, IPPROTO_IPV6, IPV6_ADDR_PREFERENCES,\\ \n\
+			(void *) &preferences, sizeof(preferences));\\ \n\
+	}\\ \n\
+	//yan-end\n\
+	' ../openhip/src/usermode/hip_umh_main.c"
+	sed -i '/return(s);/i\
+	//yan-begin - get rid of HoA\
+	if (family == AF_INET6 || family == PF_INET6) {\
+		setsockopt(s, IPPROTO_IPV6, IPV6_ADDR_PREFERENCES,\
+			(void *) &preferences, sizeof(preferences));\
+	}\
+	//yan-end
+		' ../openhip/src/usermode/hip_umh_main.c
+
+	echo
+fi
+
+echo "cp ./hip_sine.c ../openhip/src/protocol/"
+cp ./hip_sine.c ../openhip/src/protocol/
+
+echo "Done."
+echo

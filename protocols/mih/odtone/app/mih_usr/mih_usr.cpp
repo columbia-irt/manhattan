@@ -1012,9 +1012,10 @@ void *socket_handler(void *arg)
 			case 'h':	//set interface for hip
 				if (buf[2] == 'p' && buf[3] == 'p' && buf[4] == 'p') {// && IP_VERSION == 6) {
 					send_hipd("pref sixxs");	//ipv6 tunnel for ppp0
-				} else if (buf[2] == 'e' && buf[3] == 't' && buf[4] == 'h') {// && IP_VERSION == 6) {
-					send_hipd("pref he-ipv6");	//ipv6 tunnel for eth0
-				} else {
+				} //else if (buf[2] == 'e' && buf[3] == 't' && buf[4] == 'h') {// && IP_VERSION == 6) {
+				//	send_hipd("pref he-ipv6");	//ipv6 tunnel for eth0
+				//}
+				else {
 					send_hipd("pref " + odtone::mih::octet_string(buf + 2));
 				}
 				if (sendto(sockfd, "ack", 4, 0, (struct sockaddr *)&cli_addr, addrlen) < 0)
@@ -1034,9 +1035,10 @@ void *socket_handler(void *arg)
 			case 'm':
 				if (buf[2] == 'p' && buf[3] == 'p' && buf[4] == 'p') {// && IP_VERSION == 6) {
 					send_mip6d("pref sixxs");	//ipv6 tunnel for ppp0
-				} else if (buf[2] == 'e' && buf[3] == 't' && buf[4] == 'h') {// && IP_VERSION == 6) {
-					send_mip6d("pref he-ipv6");	//ipv6 tunnel for eth0
-				} else {
+				} //else if (buf[2] == 'e' && buf[3] == 't' && buf[4] == 'h') {// && IP_VERSION == 6) {
+				//	send_mip6d("pref he-ipv6");	//ipv6 tunnel for eth0
+				//} 
+				else {
 					send_mip6d("pref " + odtone::mih::octet_string(buf + 2));
 				}
 				if (sendto(sockfd, "ack", 4, 0, (struct sockaddr *)&cli_addr, addrlen) < 0)
@@ -1153,9 +1155,10 @@ void *keyboard_handler(void *arg)
 					//hip_pref(ifname);
 					if (ifname[0] == 'p' && ifname[1] == 'p' && ifname[2] == 'p') {// && IP_VERSION == 6) {
 						send_hipd("pref sixxs");	//ipv6 tunnel for ppp0
-					} else if (ifname[0] == 'e' && ifname[1] == 't' && ifname[2] == 'h') {// && IP_VERSION == 6) {
-						send_hipd("pref he-ipv6");	//ipv6 tunnel for eth0
-					} else {
+					} //else if (ifname[0] == 'e' && ifname[1] == 't' && ifname[2] == 'h') {// && IP_VERSION == 6) {
+					//	send_hipd("pref he-ipv6");	//ipv6 tunnel for eth0
+					//} 
+					else {
 						send_hipd("pref " + ifname);
 					}
 				}
@@ -1178,9 +1181,10 @@ void *keyboard_handler(void *arg)
 				{
 					if (ifname[0] == 'p' && ifname[1] == 'p' && ifname[2] == 'p') {// && IP_VERSION == 6) {
 						send_mip6d("pref sixxs");	//ipv6 tunnel for ppp0
-					} else if (ifname[0] == 'e' && ifname[1] == 't' && ifname[2] == 'h') {// && IP_VERSION == 6) {
-						send_mip6d("pref he-ipv6");	//ipv6 tunnel for eth0
-					} else {
+					} //else if (ifname[0] == 'e' && ifname[1] == 't' && ifname[2] == 'h') {// && IP_VERSION == 6) {
+					//	send_mip6d("pref he-ipv6");	//ipv6 tunnel for eth0
+					//}
+					else {
 						send_mip6d("pref " + ifname);
 					}
 				}

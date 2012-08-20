@@ -1,0 +1,28 @@
+#!/bin/bash
+
+echo "sed -i '/yan-begin/,/yan-end/d' ../openhip/src/include/hip/hip_globals.h"
+sed -i '/yan-begin/,/yan-end/d' ../openhip/src/include/hip/hip_globals.h
+
+echo "sed -i '/yan-begin/,/yan-end/d' ../openhip/src/protocol/hip_main.c"
+sed -i '/yan-begin/,/yan-end/d' ../openhip/src/protocol/hip_main.c
+
+echo "sed -i '/yan-begin/,/yan-end/d' ../openhip/src/protocol/hip_addr.c"
+sed -i '/yan-begin/,/yan-end/d' ../openhip/src/protocol/hip_addr.c
+
+echo "sed -i '/yan-begin/,/yan-end/d' ../openhip/src/protocol/hip_input.c"
+sed -i '/yan-begin/,/yan-end/d' ../openhip/src/protocol/hip_input.c
+
+echo "sed -i '/yan-begin/,/yan-end/d' ../openhip/src/protocol/hip_output.c"
+sed -i '/yan-begin/,/yan-end/d' ../openhip/src/protocol/hip_output.c
+
+echo "sed -i '/yan-begin/,/yan-end/d' ../openhip/src/util/hip_util.c"
+sed -i '/yan-begin/,/yan-end/d' ../openhip/src/util/hip_util.c
+
+echo "sed -i '/yan-begin/,/yan-end/d' ../openhip/src/usermode/hip_esp.c"
+sed -i '/yan-begin/,/yan-end/d' ../openhip/src/usermode/hip_esp.c
+
+echo "sed -i '/yan-begin/,/yan-end/d' ../openhip/src/usermode/hip_mr.c"
+sed -i '/yan-begin/,/yan-end/d' ../openhip/src/usermode/hip_mr.c
+
+echo "sed -i '/yan-begin/,/yan-end/d' ../openhip/src/usermode/hip_umh_main.c"
+sed -i '/yan-begin/,/yan-end/d' ../openhip/src/usermode/hip_umh_main.c

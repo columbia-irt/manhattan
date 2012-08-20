@@ -6,7 +6,7 @@
 #include "lm.h"
 #include "sm.h"
 
-#define SINE_SECURITY 1
+#define SINE_SECURITY 0
 #define WITH_BROWSER 0
 #define WITH_MIPV6 1
 
