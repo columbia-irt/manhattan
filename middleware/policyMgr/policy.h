@@ -8,6 +8,6 @@ extern "C" void sine_policyListener();
 void policyListenerController();
 
 #define SINE_SHIBBOLETH 1
-#define WITH_BROWSER 1
+#define WITH_BROWSER 0
 
 #endif

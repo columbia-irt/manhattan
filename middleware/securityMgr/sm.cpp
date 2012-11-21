@@ -210,7 +210,7 @@ int postAuth(CURL* curl, char* html)
 			curl_easy_cleanup(curl);
 			return -1;	
 		}
-		printf("%s\n", result);
+		//printf("%s\n", result);
 		curl_easy_cleanup(curl);
 	}
 
@@ -224,18 +224,22 @@ int postAuth(CURL* curl, char* html)
 
 void add_fw_rules(const char* ifname)
 {
+/*
 	system("sudo iptables -A INPUT -i hip0 -j DROP &> /dev/null");
 	system("sudo iptables -A OUTPUT -o hip0 -j DROP &> /dev/null");
 	system("sudo ip6tables -A INPUT -i hip0 -j DROP &> /dev/null");
 	system("sudo ip6tables -A OUTPUT -o hip0 -j DROP &> /dev/null");
+*/
 }
 
 void del_fw_rules(const char* ifname)
 {
+/*
 	system("sudo iptables -D INPUT -i hip0 -j DROP &> /dev/null");
 	system("sudo iptables -D OUTPUT -o hip0 -j DROP &> /dev/null");
 	system("sudo ip6tables -D INPUT -i hip0 -j DROP &> /dev/null");
 	system("sudo ip6tables -D OUTPUT -o hip0 -j DROP &> /dev/null");
+*/
 }
 
 bool sine_shib_browser(char* ifname)
@@ -328,16 +332,21 @@ bool sine_shib(char* ifname)
 	char html[100000] = {0};
 
 	printf("\nSecurity part: Shibboleth authentication.\n");
-	printf("Start to authenticate... Block normal traffic.\n");
+	printf("Block normal traffic\n");
 	del_fw_rules(ifname);
 	add_fw_rules(ifname);
 
-	printf("Username: myself\nPassword: myself\n");
+	//printf("Username: myself\nPassword: myself\n");
+	printf("\nStart to authenticate...\n");
+	printf("Connect to Service Provider: 128.59.20.188\n");
+	printf("Redirect to Identity Provider: 128.59.20.83\n");
 	if (getAuth(curl, URL1, html) < 0)
 	{
 		printf("Failed to connect to Shibboleth Server!\n");
 		return 0;
 	}
+	printf("Sending Credentials:\n");
+	printf("Username: myself\nPassword: myself\n");
 	//getWebpage(curl, URL2, html);
 	if (postAuth(curl, html) < 0)
 	{
@@ -345,7 +354,7 @@ bool sine_shib(char* ifname)
 		return 0;
 	}
 
-	printf("Successfully authenticated! Allow traffic.\n");
+	printf("Successfully authenticated! Allow traffic.\n\n");
 	del_fw_rules(ifname);
 
 	return 1;
