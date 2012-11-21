@@ -1,3 +1,13 @@
+/**
+	PolicyModel.cpp
+	Purpose: Interacts with the Policy Repository.
+	Invoked by the PolicyController, it interacts with Network Manager 
+	and Location Manager for information regarding network interface status 
+	and current location.
+	It implements the PFDL implementation.
+*/
+
+
 #include <iostream>
 #include <fstream>
 #include <cstring>
@@ -6,12 +16,15 @@
 #include "lm.h"
 #include "sm.h"
 
-#define SINE_SECURITY 0
+#define SINE_SECURITY 1
 #define WITH_BROWSER 0
 #define WITH_MIPV6 1
 
 using namespace std;
 
+/**
+Represents the state of each interface
+*/
 class Interface
 {
     public:
@@ -19,6 +32,12 @@ class Interface
     int interfaceStatus(char* interface);
 };
 
+/**
+Parses string to obtain the interface. Uses helper function 
+interfaceStatus for evaluation
+@param - string containing location to bechecked.
+@return - 1 if interface is up, 0 otherwise.
+*/
 int Interface::interfaceEval(char*interface)
 {
     char inter[20] = {0};
@@ -38,7 +57,8 @@ int Interface::interfaceEval(char*interface)
                 return 0;       // make it zero
 	    
 	    j=0;	
-	/* 
+	
+	/* For future Shibboleth modelling. 
 	Should uncomment the below comments, if we have multiple interfaces
 	and want to test shibboleth on each of them.        
 	*/
@@ -51,6 +71,11 @@ int Interface::interfaceEval(char*interface)
     return 1;
 }
 
+/**
+Evaluates the status of an interface by IPC with NM
+@param - interface to be checked.
+@return - 1 if interface is up, 0 otherwise.
+*/
 int Interface::interfaceStatus(char* interface)
 {
     cout<<"Checking interface "<<interface<<endl;
@@ -60,15 +85,12 @@ int Interface::interfaceStatus(char* interface)
 		return 1;
     	else
     	return 0;
-
-	// Below is for testing whether interface exists.
-   /* 	if(!strcmp(interface,"wlan0"))
-		return 1;
-		else
-		return 0;
-   */
 }
 
+
+/**
+Manages location.
+*/
 class Location
 {
     public:
@@ -76,6 +98,13 @@ class Location
     int locationStatus(char* loc);
 };
 
+
+/**
+Parses string to obtain the location. Uses helper function 
+locatinoStatus for evaluation
+@param - string contatining location to be checked.
+@return - 1 if current location is required location, 0 otherwise.
+*/
 int Location::resolveLocation(char* location)
 {
     char loc[15] = {0};
@@ -89,11 +118,9 @@ int Location::resolveLocation(char* location)
         }
         else
         {
-            //j++;
             loc[j]='\0';
 		cout << "The current location is " << loc << endl;
             int ret=locationStatus(loc);
-		//cout << "Back to resolveLocation" << endl;
             if(ret)
                 return 1;       // make it zero
             j=0;
@@ -102,6 +129,12 @@ int Location::resolveLocation(char* location)
     return 0;
 }
 
+
+/**
+Evaluates the status of a location by IPC with LM
+@param - location to be checked.
+@return - 1 if current location is required location, 0 otherwise.
+*/
 int Location::locationStatus(char* location)
 {
     char buffer[100] = {0};
@@ -117,13 +150,6 @@ int Location::locationStatus(char* location)
 		cout << buffer << endl;
     		return 0;
 	}
-
-// Just to check the validity of the location manager.
-/*    	if(!strcmp(location,"columbia"))
-		return 1;
-		else
-		return 0;
-*/
 }
 
 
@@ -134,10 +160,17 @@ class Bandwidth
     int resolveBandwidth(const char* inter, int band);
 };
 
+
+/**
+Checks the bandwidth of the interface.
+@param - interface name
+@param - desired bandwidth
+@return - 1 if current bandwidth if greater than or equal to desired bandwidth.
+	  0 otherwise.
+*/
 int Bandwidth::resolveBandwidth(const char* inter, int band)
 {
     int obtBand=510;
-    //cout<<"Got - "<<inter<<endl;
     obtBand = sine_getBandwidth(inter);
     if(band<=obtBand)
         return 1;
@@ -151,6 +184,14 @@ class Cost
     int resolveCost(const char* inter, int cost);
 };
 
+
+/**
+Checks the cost of the interface.
+@param - interface name
+@param - desired cost
+@return - 1 if current cost if less than or equal to desired cost.
+          0 otherwise.
+*/
 int Cost::resolveCost(const char* inter, int cost)
 {
     int obtCost=1;
@@ -183,7 +224,7 @@ class Action
     int encrypted;
 };
 
-class Rules     // Similar to Conditions
+class Rules
 {
     public:
     ConditionList* condList;
@@ -209,6 +250,16 @@ int evaluate (Action*, ConditionList*, char*, char*);
 int parseCondition(char* tempStore,char* metadata,char* data, char* str,int condOffest,int init2,int dataIndex, int j);
 static char retInter[10];
 
+
+
+/**
+This function looks into the polciy repository for all policies related to an
+application ID. After evaluating them in top down manner, the first policy result is 
+updated to the Network Manager. Also this value is returned to the cntroller.
+@param - application ID, for which policy is being looked up
+@param - socked indentifier
+@return - interface to bind to
+*/
 char* policyModel(int appID, int sockfd)
 {
 //yan - for mipv6
@@ -233,14 +284,14 @@ char* policyModel(int appID, int sockfd)
         unsigned int i=0;
        	for(i=0;i<strlen(str);i++)
    	{
-            if(str[i]!=','){
+            if(str[i]!=',') {
            		strAppID[dataIndex]=str[i];
        			dataIndex++;
             }
-	        else{
+	    else {
 	             strAppID[dataIndex]='\0';
 	             break;
-	        }
+	    }
     	}
     	int appIDSearch=atoi(strAppID);
     	if(appIDSearch!=appID)
@@ -252,17 +303,15 @@ char* policyModel(int appID, int sockfd)
         {
             cout<<endl<<"Working for appID "<<appIDSearch<<endl;
             Policy policy;
-		cout << "policy is newed" << endl;
             policy.appID=appIDSearch;
             char rCount[2];
             rCount[0]=str[i+1];
 	    rCount[1] = '\0';
             int ruleCount=atoi(rCount);
-            Rules rules[ruleCount];      // Set the # of rules.
-		cout << "rules is newed" << endl;
+            Rules rules[ruleCount];      /* Set the # of rules.*/
             policy.rule=rules;
 
-            for(int j=0;j<ruleCount;j++)        // looping for each condition
+            for(int j=0;j<ruleCount;j++)        /* looping for each condition */
             {
                 dataIndex=0;
 		memset(metadata,0,20);
@@ -281,7 +330,7 @@ char* policyModel(int appID, int sockfd)
                 }
                 int condCount = atoi(strCondCount);
                 char tempStore[20];
-                char data1[10];      // Do not delete this pointer
+                char data1[10];
                 int interIndex=0;
                 i++;
 
@@ -326,18 +375,12 @@ char* policyModel(int appID, int sockfd)
 
 
                 Action act; // Assigning actions to rules and itnerfaces to actions.
-			cout << "new actions" << endl;
                 ConditionList cl[condCount];
-			cout << "new conditionlist" << endl;
                 rules[j].action=&act;
-
                 rules[j].condList=cl;
-
-               //cout<<"Got 2 - "<<metadata<<endl;
 
                 if(!strcmp(metadata,"inter"))
                 {
-                  //  cout<<"In the interface "<<data1<<endl;
                     Interface obj;
                     act.interface=data1;
                     if(!(obj.interfaceEval(data1)))
@@ -350,7 +393,6 @@ char* policyModel(int appID, int sockfd)
 
                 else if(!strcmp(metadata,"loc"))
                 {
-                    cout<<"\nQuery location from Location Manager.\n";
                     Location obj;
                     if(!(obj.resolveLocation(data1)))
                     {
@@ -365,10 +407,12 @@ char* policyModel(int appID, int sockfd)
 
                 else if(!strcmp(metadata,"band"))
                 {
-                    //act.interface=interfaces;    // we assign the act.interface later on.
                     Bandwidth obj;
                     int band = atoi(data1);
-                    /*if(!(obj->resolveBandwidth(band)))
+                    /*
+			This code shall resolve bandwidth when it is available in NM	
+		    */
+		    /*if(!(obj->resolveBandwidth(band)))
                     {
                         for(int i=0;i<condCount;i++)
                             in.getline(str, 255);
@@ -378,9 +422,11 @@ char* policyModel(int appID, int sockfd)
 
                 else if(!strcmp(metadata,"cost"))
                 {
-                    //act.interface=interfaces;    // we assign the act.interface later on.
                     Cost obj;
                     int cost = atoi(data1);
+		   /*
+                        This code shall resolve cost when it is available in NM 
+		   */
                     /*if(!(obj->resolveCost(cost)))
                     {
                         for(int i=0;i<condCount;i++)
@@ -391,9 +437,12 @@ char* policyModel(int appID, int sockfd)
 
                 else if(!strcmp(metadata,"limit"))
                 {
-                    //act.interface=interfaces;    // we assign the act.interface later on.
                     DownloadLimit obj;
                     int limit = atoi(data1);
+		    
+		    /*
+			This code shall invoke the Flow Manager.	
+		    */		
                     /*if(!(obj->resolvedwnLimit(limit)))
                     {
                         for(int i=0;i<condCount;i++)
@@ -410,15 +459,10 @@ char* policyModel(int appID, int sockfd)
 		//yan - end
 
                 cout<<"\nTrying to check a condition\n";
-                // Now loop for condCount
                 for(int i=0;i<condCount;i++)
                 {
                      in.getline(str, 255);
 			
-		     // TODO - Change the following to a loop
-                     // Working on the first part
-
-			//yan - rewrite the code
 			int condOffset = 0;
 			int status = 1;
 			while (condOffset < strlen(str))
@@ -439,54 +483,14 @@ char* policyModel(int appID, int sockfd)
 			}
 			if (!status)
 				continue;
-			//yan - end
-/*
-
-                    // Work on the second part
-                     dataIndex=0;
-                     condOffest++;
-                     memset(tempStore,0,20);
-                     memset(metadata,0,10);
-                     init2=0;
-                     j=0;
-                     char data3[20];
-                    condOffest=parseCondition(tempStore,metadata,data3,str,condOffest,init2, dataIndex, j);
-                     status = evaluate(&act, cl, metadata, data3);
-                     if(!status)
-                        continue;
-
-
-                    // Work on the third part
-                     dataIndex=0;
-                     condOffest++;
-                     memset(tempStore,0,20);
-                     memset(metadata,0,10);
-                     char data4[20];
-                     init2=0;
-                     j=0;
-                    condOffest=parseCondition(tempStore,metadata,data4,str,condOffest,init2, dataIndex, j);
-                     status = evaluate(&act, cl, metadata, data4);
-                     if(!status)
-                        continue;
-
-
-                    // Work on the part4
-                     dataIndex=0;
-                     condOffest++;
-                     memset(tempStore,0,20);
-                     memset(metadata,0,10);
-                     char data5[20];
-                     init2=0;
-                     j=0;
-                     condOffest=parseCondition(tempStore,metadata,data5,str,condOffest,init2, dataIndex, j);
-                     status = evaluate(&act, cl, metadata, data5);
-                     if(!status)
-                        continue;
-  */                   
 			strcpy(retInter,act.interface.c_str());
 
 
-			// Need this API from Sabari
+			/*
+			 TODO
+			 Based upon whether the address is a HIP address or not,
+			 we invoke HIP or MIPV6  
+			*/
 			/*
 			   if(isHipAddress())
 			   {
@@ -501,7 +505,6 @@ char* policyModel(int appID, int sockfd)
 			   }		
 			*/
 			
-			// Comment out the below 4 lines if you are using the above if-else block	
 			//yan - mipv6
 			if (appID == 36) {
 				sine_setMipIf(sockfd, retInter);
@@ -519,16 +522,25 @@ char* policyModel(int appID, int sockfd)
 				}
 				sine_confirmHipIf(sockfd, retInter);
 			}
-
                      return retInter;
-
-                }   // Condition loop ends
+                }
             }
             return NULL;
-        }   // else ends (I am checking the right policy)
-    }   // while ends
-}   // function returns
+        }
+    }
+}
 
+
+/**
+@param - String to temporarily store condition variable
+@param - Empty string to contain the condition criteria
+@param - Empty string to contain the associated value.
+@param - String being parsed
+@param - total condition in the policy
+@param - offset
+@param - offset
+@return - number of conditions evaluated.
+*/
 
 int parseCondition(char* tempStore,char* metadata,char* data2, char* str,int condOffest,int init2,int dataIndex, int j)
 {
@@ -554,7 +566,6 @@ int parseCondition(char* tempStore,char* metadata,char* data2, char* str,int con
                         }
                         else
                         {
-                            //j++;
                             metadata[j]='\0';
                             break;
                         }
@@ -577,15 +588,18 @@ int parseCondition(char* tempStore,char* metadata,char* data2, char* str,int con
 		return condOffest;
 }
 
-
-
+/**
+This is the evaluator. Based upon the metadata, appropriate conditions are checked.
+@param - Action class.
+@param - ConditionList class
+@param - string representing the condition to be compared, ed - bandwidth
+@param - data of teh associated condition.
+*/
 int evaluate (Action* act, ConditionList* cl, char* metadata, char* data2)
 {
-		//cout<<"Metadata - "<<metadata<<endl;
                 if(!strcmp(metadata,"inter"))
                 {
                     act->interface=data2;
-                    cout<<"intermediate - "<<act->interface<<" "<<data2<<endl;
 
                     Interface obj;
                     if(!(obj.interfaceEval(data2)))
@@ -596,14 +610,13 @@ int evaluate (Action* act, ConditionList* cl, char* metadata, char* data2)
                 else if(!strcmp(metadata,"loc"))
                 {
                       Location locObj;
-                       cl->location=locObj;                   // Do not delete strLocation -> memory leak.
+                       cl->location=locObj;
                       if(!((cl->location).resolveLocation(data2)))
 			{
 				cout << "Location not matched 2" << endl;
                         	return 0;
 			}	
 			cout << "Location matched 2" << endl;
-
                 }
 
                 else if(!strcmp(metadata,"band"))
@@ -696,8 +709,6 @@ int evaluate (Action* act, ConditionList* cl, char* metadata, char* data2)
                     offset = atoi(strOffset);
                     if(!((cl->cost).resolveCost(act->interface.c_str(), cost+offset)))
                        return 0;
-
-                    //delete cl->cost;
                 }
 
                 else if(!strcmp(metadata,"limit"))
@@ -705,9 +716,6 @@ int evaluate (Action* act, ConditionList* cl, char* metadata, char* data2)
                     int download = atoi(data2);
                     DownloadLimit dwnObj;
                     cl->dwnLimit=dwnObj;
-           /*          if(!((cl->dwnLimit).resolvedwnLimit(download)))
-                        return 0;
-            */
                 }
 
 		else if (!strcmp(metadata, "encrypt"))

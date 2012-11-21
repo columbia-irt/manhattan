@@ -1,3 +1,9 @@
+/**
+	PolicyController.cpp
+	Purpose: Invokes the Policy Model
+*/
+
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -13,16 +19,14 @@ static char** interfaces;
 void sine_policyModelController(int appID);
 
 
-/*int main()
-{
-	sine_policyModelController(35);
-
-}*/
-
+/**
+Invokes the Policy Model
+@param - Application ID
+@return
+*/
 void sine_policyModelController(int appID)
 {
 	int sockfd=0;
-//	sockfd = sine_getsockfdCM();
 	char* interfaces=policyModel(appID, sockfd);
 	if(interfaces==NULL)
         cout<<"No available interfaces\n";
@@ -30,10 +34,12 @@ void sine_policyModelController(int appID)
         cout<<"Connecting to "<<interfaces<<endl;
 }
 
+/**
+API used by the Policy Listener to invoke Policy Engine when an event occurs
+*/
 void policyListenerController()
 {
 	int appID=35;
-//	int appID=sine_getappIDCM();
 	sine_policyModelController(appID);
 	appID = 36;	//yan - for MIPv6
 	sine_policyModelController(appID);
