@@ -19,26 +19,10 @@ protocols/mih/odtone/dist/miis_rdf_server
 protocols/mih/odtone/dist/miis_rdf_server.conf
 protocols/mih/odtone/dist/odtone-mihf
 #protocols/mih/odtone/dist/odtone.conf
-protocols/openhip/config.log
-protocols/openhip/config.status
-protocols/openhip/Makefile
-protocols/openhip/src/Makefile
 protocols/openhip/src/hip
 protocols/openhip/src/hipstatus
 protocols/openhip/src/hitgen
-protocols/openhip/src/util/Makefile
-protocols/openhip/docs/Makefile
 protocols/openhip/src/.deps
-protocols/umip/config.log
-protocols/umip/config.status
-protocols/umip/Makefile
-protocols/umip/libmissing/Makefile
-protocols/umip/libmissing/.deps
-protocols/umip/libnetlink/Makefile
-protocols/umip/libnetlink/.deps
-protocols/umip/man/Makefile
-protocols/umip/src/.deps
-protocols/umip/src/Makefile
 protocols/umip/src/mip6d
 protocols/umip/src/gram.c
 protocols/umip/src/gram.h
@@ -61,8 +45,6 @@ protocols/mih/output_miis
 
 # Can also ignore all directories and files in a directory.
 android
-configure
-config.h
 config.log
 config.status
 Makefile
