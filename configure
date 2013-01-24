@@ -16,7 +16,7 @@ fi
 
 if [ ! -f "./middleware/srelay/srelay-0.4.8b5/Makefile" ]
 then
-	pushd ./middleware/srelay/srelay-0.4.8b5
+	pushd "./middleware/srelay/srelay-0.4.8b5"
 	./configure
 	popd
 fi
@@ -55,6 +55,6 @@ fi
 if [ -z `grep -r sine /etc/iproute2/rt_tables` ]
 then
 	cp /etc/iproute2/rt_tables ./
-	echo -e "\n200\thip0\n201\teth0\n202\twlan0\n203\tppp0\n204\tsixxs\n205\the-ipv6\n252\tsine\n" >> rt_tables
+	echo -e "#sine\n200\thip0\n201\teth0\n202\twlan0\n203\tppp0\n204\tsixxs\n205\the-ipv6\n252\tmipv6\n" >> rt_tables
 	sudo mv rt_tables /etc/iproute2/rt_tables
 fi
