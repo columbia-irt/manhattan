@@ -449,7 +449,7 @@ Copyright (C) 2010 Free Software Foundation, Inc.
 This config.status script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it."
 
-ac_pwd='/home/mika/Downloads/openhip-0.9'
+ac_pwd='/home/mika/manhattan/protocols/openhip-0.9'
 srcdir='.'
 INSTALL='/usr/bin/install -c'
 MKDIR_P='/bin/mkdir -p'
@@ -677,7 +677,7 @@ S["CFLAGS"]="-g -O2 -O3 -Werror -D_GNU_SOURCE -fno-strict-aliasing -Wall -DCONFI
 S["CC"]="gcc"
 S["am__untar"]="${AMTAR} xf -"
 S["am__tar"]="${AMTAR} chof - \"$$tardir\""
-S["AMTAR"]="${SHELL} /home/mika/Downloads/openhip-0.9/config/missing --run tar"
+S["AMTAR"]="${SHELL} /home/mika/manhattan/protocols/openhip-0.9/config/missing --run tar"
 S["am__leading_dot"]="."
 S["SET_MAKE"]=""
 S["AWK"]="gawk"
@@ -685,12 +685,12 @@ S["mkdir_p"]="/bin/mkdir -p"
 S["MKDIR_P"]="/bin/mkdir -p"
 S["INSTALL_STRIP_PROGRAM"]="$(install_sh) -c -s"
 S["STRIP"]=""
-S["install_sh"]="${SHELL} /home/mika/Downloads/openhip-0.9/config/install-sh"
-S["MAKEINFO"]="${SHELL} /home/mika/Downloads/openhip-0.9/config/missing --run makeinfo"
-S["AUTOHEADER"]="${SHELL} /home/mika/Downloads/openhip-0.9/config/missing --run autoheader"
-S["AUTOMAKE"]="${SHELL} /home/mika/Downloads/openhip-0.9/config/missing --run automake-1.11"
-S["AUTOCONF"]="${SHELL} /home/mika/Downloads/openhip-0.9/config/missing --run autoconf"
-S["ACLOCAL"]="${SHELL} /home/mika/Downloads/openhip-0.9/config/missing --run aclocal-1.11"
+S["install_sh"]="${SHELL} /home/mika/manhattan/protocols/openhip-0.9/config/install-sh"
+S["MAKEINFO"]="${SHELL} /home/mika/manhattan/protocols/openhip-0.9/config/missing --run makeinfo"
+S["AUTOHEADER"]="${SHELL} /home/mika/manhattan/protocols/openhip-0.9/config/missing --run autoheader"
+S["AUTOMAKE"]="${SHELL} /home/mika/manhattan/protocols/openhip-0.9/config/missing --run automake-1.11"
+S["AUTOCONF"]="${SHELL} /home/mika/manhattan/protocols/openhip-0.9/config/missing --run autoconf"
+S["ACLOCAL"]="${SHELL} /home/mika/manhattan/protocols/openhip-0.9/config/missing --run aclocal-1.11"
 S["VERSION"]="0.9"
 S["PACKAGE"]="openhip"
 S["CYGPATH_W"]="echo"

@@ -2203,6 +2203,7 @@ void get_gateway(const char *ifname, struct in6_addr *gateway) {
 	}
 }
 
+//yan - begin
 int pref_change(const char *ifname) {
 	struct list_head *l;//, *n;
 	struct md_inet6_iface *newif = NULL;
@@ -2286,7 +2287,6 @@ int pref_change(const char *ifname) {
 	return -1;	//nothing changed
 }
 
-//yan
 /*
 void pref_change() {
 	struct list_head *l;

@@ -659,6 +659,8 @@ int mh_send(const struct in6_addr_bundle *addrs, const struct iovec *mh_vec,
 	daddr.sin6_family = AF_INET6;
 	daddr.sin6_addr = *addrs->dst;
 	daddr.sin6_port = htons(IPPROTO_MH);
+		MDBG("11111111111111111111111111111111 %x:%x:%x:%x:%x:%x:%x:%x\n",
+		     NIP6ADDR(addrs->dst));	//yan
 
 	memset(&pinfo, 0, sizeof(pinfo));
 	pinfo.ipi6_addr = *addrs->src;
@@ -721,6 +723,7 @@ int mh_send(const struct in6_addr_bundle *addrs, const struct iovec *mh_vec,
 	setsockopt(mh_sock.fd, IPPROTO_IPV6, IPV6_PKTINFO,
 		   &on, sizeof(int));
 	ret = sendmsg(mh_sock.fd, &msg, 0);
+	MDBG("2222222222222222222222222222222222222 %d\n", ret);	//yan
 	if (ret < 0)
 		dbg("sendmsg: %s\n", strerror(errno));
 

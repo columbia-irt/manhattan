@@ -95,9 +95,6 @@ extern int socketpair(int, int, int, int sv[2]);
 /*
  * Function prototypes
  */
-//yan-begin
-pthread_t pref_thread = 0; //Apr 10 2012
-//yan-end
 int main(int argc, char *argv[]);
 
 /* HIP packets */
@@ -134,9 +131,6 @@ void endbox_init();
 
 int main_loop(int argc, char **argv)
 {
-	//yan-begin
-	int preferences = IPV6_PREFER_SRC_COA;  //get rid of home address
-	//yan-end
   struct timeval time1, timeout;       /* Used in select() loop */
 #ifndef __WIN32__
   struct msghdr msg = {0};
@@ -163,9 +157,6 @@ int main_loop(int argc, char **argv)
   time_t last_time, now_time;
 #endif
 
-	//yan-begin
-	pthread_create(&pref_thread, NULL, hip_pref_listener, NULL);
-	//yan-end
   /* Initializing global variables */
   memset(hip_assoc_table, 0, sizeof(hip_assoc_table));
 
@@ -590,10 +581,6 @@ int main_loop(int argc, char **argv)
   setsockopt(s6_hip, IPPROTO_IPV6, IPV6_RECVERR, &optval, sizeof(optval));
   setsockopt(s6_hip, IPPROTO_IPV6, IPV6_RECVPKTINFO, &optval,
              sizeof(optval));
-	//yan-begin
-	setsockopt(s6_hip, IPPROTO_IPV6, IPV6_ADDR_PREFERENCES,
-		   (void *) &preferences, sizeof(preferences));	//get rid of HoA
-	//yan-end
   if (bind(s6_hip, (struct sockaddr*)&addr6, sizeof(addr6)) < 0)
     {
       log_(ERR, "bind() for IPv6 HIP socket failed.\n");

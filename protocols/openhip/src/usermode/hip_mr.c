@@ -1501,9 +1501,6 @@ unsigned char *check_esp_packet(int family, int inbound, struct if_data *ext_if,
  */
 void *hip_mobile_router(void *arg)
 {
-	//yan-begin
-	int preferences = IPV6_PREFER_SRC_COA;
-	//yan-end
   int i, len, ifi;
   __u32 pkt_id, verdict;
   __u8 family, hook;
@@ -1554,10 +1551,6 @@ void *hip_mobile_router(void *arg)
              strerror(errno));
       return(NULL);
     }
-	//yan-begin - get rid of HoA
-	setsockopt(raw_ip6_socket, IPPROTO_IPV6, IPV6_ADDR_PREFERENCES,
-		(void *) &preferences, sizeof(preferences));
-	//yan-end
 
   printf("Mobile router initialized.\n");
   fflush(stdout);

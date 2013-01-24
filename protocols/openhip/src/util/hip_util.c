@@ -3549,10 +3549,6 @@ void hip_exit(int signal)
       return;
     }
   been_here_before = 1;
-	//yan-begin
-	if (pref_thread >= 0) pthread_cancel(pref_thread);
-	hip_sine_cleanup();
-	//yan-end
   if (signal == SIGSEGV)
     {
       log_(QOUT, "****** the HIP process has encountered a bug and "

@@ -204,9 +204,6 @@ void *hip_esp_output(void *arg)
   __u8 raw_buff[BUFF_LEN];
   __u8 data[BUFF_LEN];       /* encrypted data buffer */
   struct ip *iph;
-	//yan-begin
-	int preferences = IPV6_PREFER_SRC_COA;
-	//yan-end
 
 #ifdef __WIN32__
   DWORD lenin;
@@ -469,15 +466,6 @@ void *hip_esp_output(void *arg)
               else
                 {
                   s = s_esp6;
-			//yan-begin - get rid of HoA
-			if (setsockopt(s, IPPROTO_IPV6,
-					IPV6_ADDR_PREFERENCES,
-					(void *) &preferences,
-					sizeof(preferences)) < 0) {
-				printf("set coa address error: (%d) %s\n",
-					errno, strerror(errno));
-			}
-			//yan-end
                 }
               err = sendto(s, data, len, flags,
                            SA(&entry->dst_addrs->addr),
@@ -604,15 +592,6 @@ void *hip_esp_output(void *arg)
           else
             {
               s = s_esp6;
-			//yan-begin - get rid of HoA
-			if (setsockopt(s, IPPROTO_IPV6,
-					IPV6_ADDR_PREFERENCES,
-					(void *) &preferences,
-					sizeof(preferences)) < 0) {
-				printf("set coa address error: (%d) %s\n",
-					errno, strerror(errno));
-			}
-			//yan-end
             }
           err = sendto(   s, data, len, flags,
                           SA(&entry->dst_addrs->addr),
@@ -758,15 +737,6 @@ void *hip_esp_output(void *arg)
               else
                 {
                   s = s_esp6;
-			//yan-begin - get rid of HoA
-			if (setsockopt(s, IPPROTO_IPV6,
-					IPV6_ADDR_PREFERENCES,
-					(void *) &preferences,
-					sizeof(preferences)) < 0) {
-				printf("set coa address error: (%d) %s\n",
-					errno, strerror(errno));
-			}
-			//yan-end
                 }
               err = sendto(s, data, len, flags,
                            SA(&entry->dst_addrs->addr),

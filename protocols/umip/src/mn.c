@@ -2685,7 +2685,13 @@ int mn_init(void)
 	if (md_start() < 0)
 		goto err_md;
 
-	system("sudo ip -6 route add table sine default via fe80::21f:3bff:fe05:6d5b dev wlan0 proto ra metric 996 mtu 1500 advmss 1440 hoplimit 0");	//yan
+	//yan - begin - hardcode init routing tables
+	system("sudo ip -6 route add table mipv6 default via fe80::21f:3bff:fe05:6d5b dev wlan0 proto ra metric 996 mtu 1500 advmss 1440 hoplimit 0");	//yan
+	system("sudo ip -6 rule add from 2001:468:904:16:221:86ff:fe52:7b27 lookup eth0v6 pref 1001");
+	//system("sudo ip -6 rule add from 2001:4830:1100:1ef::2 lookup sixxsv6 pref 1001");
+	system("sudo ip -6 route add table eth0v6 2001:470:1f07:20c::1 via fe80::2d0:6ff:fe26:9c00 dev eth0");
+	//system("sudo ip -6 route add table sixxsv6 2001:470:1f07:20c::1 via 2001:4830:1100:1ef::1 dev sixxs");
+	//yan - end
 
 	return 0;
 err_md:
@@ -2740,6 +2746,12 @@ void mn_cleanup()
 	bul_cleanup();
 	md_cleanup();
 
-	system("sudo ip -6 route del table sine default dev wlan0");	//yan
+	//yan - begin - clean hardcoded routing tables
+	system("sudo ip -6 route del table mipv6 default dev wlan0");
+	system("sudo ip -6 route del table eth0v6 2001:470:1f07:20c::1 via fe80::2d0:6ff:fe26:9c00 dev eth0");
+	//system("sudo ip -6 route del table sixxsv6 2001:470:1f07:20c::1 via 2001:4830:1100:1ef::1 dev sixxs");
+	system("sudo ip -6 rule del from 2001:468:904:16:221:86ff:fe52:7b27 lookup eth0v6 pref 1001");
+	//system("sudo ip -6 rule del from 2001:4830:1100:1ef::2 lookup sixxsv6 pref 1001");
+	//yan - end
 }
 

@@ -4280,11 +4280,13 @@ echo $ECHO_N "checking whether enabling thread... $ECHO_C" >&6; }
 	    LDFLAGS="$LDFLAGS -lpthread"
 	fi
 	if test "$cross_compiling" = yes; then
-  { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling
-See \`config.log' for more details." >&5
-echo "$as_me: error: cannot run test program while cross compiling
-See \`config.log' for more details." >&2;}
-   { (exit 1); exit 1; }; }
+	    CFLAGS="$CFLAGS -static -pthread"
+	    LDFLAGS="$LDFLAGS -lpthread"
+#  { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling
+#See \`config.log' for more details." >&5
+#echo "$as_me: error: cannot run test program while cross compiling
+#See \`config.log' for more details." >&2;}
+#   { (exit 1); exit 1; }; }
 else
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */

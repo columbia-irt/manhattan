@@ -119,9 +119,6 @@ void *hipd_main(void *args)
  */
 int init_esp_input(int family, int type, int proto, int port, char *msg)
 {
-	//yan-begin
-	int preferences = IPV6_PREFER_SRC_COA;
-	//yan-end
   int s, err;
   struct sockaddr_storage local_s;
   struct sockaddr *local = SA(&local_s);
@@ -156,12 +153,6 @@ int init_esp_input(int family, int type, int proto, int port, char *msg)
       return(-1);
     }
 
-	//yan-begin - get rid of HoA
-	if (family == AF_INET6 || family == PF_INET6) {
-		setsockopt(s, IPPROTO_IPV6, IPV6_ADDR_PREFERENCES,
-			(void *) &preferences, sizeof(preferences));
-	}
-	//yan-end
   return(s);
 }
 

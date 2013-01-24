@@ -33,6 +33,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sys/stat.h>
+#include <sys/ioctl.h>
 #include "srelay.h"
 
 /* prototypes */

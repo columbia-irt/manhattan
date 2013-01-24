@@ -2976,9 +2976,6 @@ int handle_update_readdress(hip_assoc *hip_a, struct sockaddr **addrcheck)
           /* choose address to verify */
         }
       else if (!hip_a->peer_hi->skip_addrcheck &&
-			//yan-begin
-			l->preferred &&
-			//yan-end
                (l->status == UNVERIFIED))
         {
           /* XXX for now, verify only the first address */
@@ -3997,13 +3994,6 @@ int handle_transforms(hip_assoc *hip_a, __u16 *transforms, int length, int esp)
                transform_id);
           continue;
         }
-		//yan-begin - control encryption
-		if (esp && encrypt_off &&
-		    (transform_id < ESP_NULL_HMAC_SHA1 ||
-		     transform_id > ESP_NULL_HMAC_MD5)) {
-			continue;
-		}
-		//yan-end
       if ((hip_a->available_transforms >>
            (transform_id + offset)) & 0x1)
         {

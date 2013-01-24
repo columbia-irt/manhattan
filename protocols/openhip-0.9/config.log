@@ -27,6 +27,7 @@ uname -v = #3 SMP Thu Mar 1 02:17:37 EST 2012
 /usr/bin/oslevel       = unknown
 /bin/universe          = unknown
 
+PATH: /home/mika/android/Sourcery_G++_Lite/bin
 PATH: /usr/local/sbin
 PATH: /usr/local/bin
 PATH: /usr/sbin
@@ -2118,14 +2119,14 @@ pkg_cv_libxml2_LIBS='-lxml2  '
 ## Output variables. ##
 ## ----------------- ##
 
-ACLOCAL='${SHELL} /home/mika/Downloads/openhip-0.9/config/missing --run aclocal-1.11'
+ACLOCAL='${SHELL} /home/mika/manhattan/protocols/openhip-0.9/config/missing --run aclocal-1.11'
 AMDEPBACKSLASH='\'
 AMDEP_FALSE='#'
 AMDEP_TRUE=''
-AMTAR='${SHELL} /home/mika/Downloads/openhip-0.9/config/missing --run tar'
-AUTOCONF='${SHELL} /home/mika/Downloads/openhip-0.9/config/missing --run autoconf'
-AUTOHEADER='${SHELL} /home/mika/Downloads/openhip-0.9/config/missing --run autoheader'
-AUTOMAKE='${SHELL} /home/mika/Downloads/openhip-0.9/config/missing --run automake-1.11'
+AMTAR='${SHELL} /home/mika/manhattan/protocols/openhip-0.9/config/missing --run tar'
+AUTOCONF='${SHELL} /home/mika/manhattan/protocols/openhip-0.9/config/missing --run autoconf'
+AUTOHEADER='${SHELL} /home/mika/manhattan/protocols/openhip-0.9/config/missing --run autoheader'
+AUTOMAKE='${SHELL} /home/mika/manhattan/protocols/openhip-0.9/config/missing --run automake-1.11'
 AWK='gawk'
 CC='gcc'
 CCDEPMODE='depmode=gcc3'
@@ -2152,7 +2153,7 @@ LDFLAGS=''
 LIBOBJS=''
 LIBS='-lpthread -lcrypto -lcrypto  -lm'
 LTLIBOBJS=''
-MAKEINFO='${SHELL} /home/mika/Downloads/openhip-0.9/config/missing --run makeinfo'
+MAKEINFO='${SHELL} /home/mika/manhattan/protocols/openhip-0.9/config/missing --run makeinfo'
 MKDIR_P='/bin/mkdir -p'
 OBJEXT='o'
 PACKAGE='openhip'
@@ -2203,7 +2204,7 @@ host_alias=''
 htmldir='${docdir}'
 includedir='${prefix}/include'
 infodir='${datarootdir}/info'
-install_sh='${SHELL} /home/mika/Downloads/openhip-0.9/config/install-sh'
+install_sh='${SHELL} /home/mika/manhattan/protocols/openhip-0.9/config/install-sh'
 libdir='${exec_prefix}/lib'
 libexecdir='${exec_prefix}/libexec'
 libxml2_CFLAGS='-I/usr/include/libxml2  '

@@ -1782,16 +1782,6 @@ int hip_send(__u8 *data, int len, struct sockaddr* src, struct sockaddr* dst,
       goto queue_retrans;
     }
 
-	//yan-begin - get rid of HoA
-	int preferences = IPV6_PREFER_SRC_COA;
-	if (src->sa_family != AF_INET) {
-		if (setsockopt(s6_hip, IPPROTO_IPV6, IPV6_ADDR_PREFERENCES,
-				(void *) &preferences, sizeof(preferences)) < 0) {
-			log_(WARN, "set coa address error: %s.\n", strerror(errno));
-			goto queue_retrans;
-		}
-	}
-	//yan-end
   if (connect(s, dst, SALEN(dst)) < 0)
     {
       log_(WARN, "connect(%s) error: %s.\n",

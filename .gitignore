@@ -47,6 +47,8 @@ protocols/umip/src/pmgr.h
 protocols/umip/src/scan.c
 protocols/mih/odtone/dist/output
 protocols/mih/odtone/dist/output_miis
+protocols/mih/output
+protocols/mih/output_miis
 
 # Use wildcards as well
 *~
@@ -55,5 +57,13 @@ protocols/mih/odtone/dist/output_miis
 *.a
 *.man
 *.Po
+*.tar.gz
 
 # Can also ignore all directories and files in a directory.
+android
+configure
+config.h
+config.log
+config.status
+Makefile
+.deps

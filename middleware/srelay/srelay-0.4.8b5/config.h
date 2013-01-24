@@ -116,7 +116,7 @@
 #define HAVE_U_INT8_T 1
 
 /* Define if the build system is Linux */
-#define LINUX 1
+/* #undef LINUX */
 
 /* Define if you indicate LOG_LOCALx syslog facility. */
 /* #undef LOCAL_FAC */
@@ -155,4 +155,4 @@
 #define TIME_WITH_SYS_TIME 1
 
 /* Define if you build a POSIX threading version. */
-#define USE_THREAD 1
+/* #undef USE_THREAD */
