@@ -4,18 +4,18 @@
 #
 
 SHELL	= /bin/sh
-prefix	= /home/mika/android/install
+prefix	= /usr/local
 exec_prefix=${prefix}
 srcdir	= .
 sbindir	= ${exec_prefix}/sbin
 libdir	= ${exec_prefix}/lib
 sysconfdir = ${prefix}/etc
-CC	= arm-none-linux-gnueabi-gcc
-CFLAGS	=  -O2 -Wall -static -pthread
-CPPFLAGS= -I/home/mika/android/install/include
+CC	= gcc
+CFLAGS	=  -O2 -Wall
+CPPFLAGS= 
 DEFS	= -DHAVE_CONFIG_H -DSYSCONFDIR=\"$(sysconfdir)\"
-LDFLAGS	= -L/home/mika/android/install/lib -lpthread
-LIBS	= -lcrypt
+LDFLAGS	=  -pthread
+LIBS	= -lcrypt -lwrap -L/usr/local/lib 
 INCLUDES=
 OBJS	= init.o readconf.o util.o socks.o relay.o main.o \
 		auth-pwd.o get-bind.o

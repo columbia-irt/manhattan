@@ -45,7 +45,7 @@ protocols/mih/output_miis
 
 # Can also ignore all directories and files in a directory.
 android
+config.h
 config.log
 config.status
-Makefile
 .deps

@@ -26,16 +26,16 @@ DEBUG		= -g -DNDEBUG
 default: all
 
 # end of $RCSFile$
-LOADLIBES =  -lpthread -lcrypt -lcurl
+LOADLIBES =  -lpthread -lcrypt -lcurl -lwrap
 
 INCLUDES        = -I. -I$(TOP)/protocolMgr -I$(TOP)/connectionMgr -I$(TOP)/policyMgr -I$(TOP)/networkMgr -I$(TOP)/locationMgr -I$(TOP)/srelay/srelay-0.4.8b5
 
 OBJECTS = ./protocolMgr/sine_socket.o ./connectionMgr/connectionMgr.o ./policyMgr/PolicyModel.o ./policyMgr/PolicyListener.o ./policyMgr/PolicyController.o ./networkMgr/nm.o ./locationMgr/lm.o ./securityMgr/sm.o
-OBJECTS	+= ./srelay/srelay-0.4.8b5/init.o ./srelay/srelay-0.4.8b5/readconf.o ./srelay/srelay-0.4.8b5/util.o ./srelay/srelay-0.4.8b5/socks.o ./srelay/srelay-0.4.8b5/relay.o ./srelay/srelay-0.4.8b5/main.o ./srelay/srelay-0.4.8b5/auth-pwd.o ./srelay/srelay-0.4.8b5/get-bind.o
+OBJECTS	+= ./srelay/srelay-0.4.8b5/init.o ./srelay/srelay-0.4.8b5/readconf.o ./srelay/srelay-0.4.8b5/util.o ./srelay/srelay-0.4.8b5/get-bind.o ./srelay/srelay-0.4.8b5/socks.o ./srelay/srelay-0.4.8b5/relay.o ./srelay/srelay-0.4.8b5/main.o ./srelay/srelay-0.4.8b5/auth-pwd.o
 
 TARGETS = sined
 
-SRCS = ./protocolMgr/sine_socket.c ./connectionMgr/connectionMgr.c ./policyMgr/PolicyModel.cpp ./policyMgr/PolicyListener.cpp ./policyMgr/PolicyController.cpp ./networkMgr/nm.cpp ./locationMgr/lm.cpp ./securityMgr/sm.cpp ./srelay/srelay-0.4.8b5/init.c ./srelay/srelay-0.4.8b5/readconf.c ./srelay/srelay-0.4.8b5/util.c ./srelay/srelay-0.4.8b5/socks.c ./srelay/srelay-0.4.8b5/relay.c ./srelay/srelay-0.4.8b5/main.c ./srelay/srelay-0.4.8b5/auth-pwd.c ./srelay/srelay-0.4.8b5/get-bind.c
+SRCS = ./protocolMgr/sine_socket.c ./connectionMgr/connectionMgr.c ./policyMgr/PolicyModel.cpp ./policyMgr/PolicyListener.cpp ./policyMgr/PolicyController.cpp ./networkMgr/nm.cpp ./locationMgr/lm.cpp ./securityMgr/sm.cpp ./srelay/srelay-0.4.8b5/config.h ./srelay/srelay-0.4.8b5/init.c ./srelay/srelay-0.4.8b5/readconf.c ./srelay/srelay-0.4.8b5/util.c ./srelay/srelay-0.4.8b5/socks.c ./srelay/srelay-0.4.8b5/relay.c ./srelay/srelay-0.4.8b5/main.c ./srelay/srelay-0.4.8b5/auth-pwd.c ./srelay/srelay-0.4.8b5/get-bind.c
 
 all: $(TARGETS)
 

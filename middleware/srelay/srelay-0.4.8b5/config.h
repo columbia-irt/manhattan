@@ -35,7 +35,7 @@
 /* #undef HAVE_LIBSOCKET */
 
 /* Define to 1 if you have the `wrap' library (-lwrap). */
-/* #undef HAVE_LIBWRAP */
+#define HAVE_LIBWRAP 1
 
 /* Define to 1 if you have the `xnet' library (-lxnet). */
 /* #undef HAVE_LIBXNET */
@@ -92,7 +92,7 @@
 #define HAVE_SYS_WAIT_H 1
 
 /* Define if you have the <tcpd.h> header file. */
-/* #undef HAVE_TCPD_H */
+#define HAVE_TCPD_H 1
 
 /* Define to 1 if the system has the type `uint16_t'. */
 #define HAVE_UINT16_T 1
@@ -116,7 +116,7 @@
 #define HAVE_U_INT8_T 1
 
 /* Define if the build system is Linux */
-/* #undef LINUX */
+#define LINUX 1
 
 /* Define if you indicate LOG_LOCALx syslog facility. */
 /* #undef LOCAL_FAC */
@@ -155,4 +155,4 @@
 #define TIME_WITH_SYS_TIME 1
 
 /* Define if you build a POSIX threading version. */
-/* #undef USE_THREAD */
+#define USE_THREAD 1
