@@ -33,6 +33,7 @@ protocols/mih/odtone/dist/output
 protocols/mih/odtone/dist/output_miis
 protocols/mih/output
 protocols/mih/output_miis
+experiments/vlc-1.1.13
 
 # Use wildcards as well
 *~
@@ -42,6 +43,8 @@ protocols/mih/output_miis
 *.man
 *.Po
 *.tar.gz
+*.tar.bz2
+*.out
 
 # Can also ignore all directories and files in a directory.
 android
