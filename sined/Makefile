@@ -1,4 +1,4 @@
-CFLAGS=-g -O2 -Wall -Wextra -Isrc -DNDEBUG $(OPTFLAGS)
+CFLAGS=-g -O2 -Wall -Wextra -Isrc $(OPTFLAGS)
 LIBS=-lpthread $(OPTLIBS)
 PREFIX?=/usr/local
 
@@ -15,8 +15,8 @@ SO_TARGET=$(patsubst %.a,%.so, $(A_TARGET))
 # The Target Build
 all:	$(TARGET) $(SO_TARGET) tests
 
-dev: 	CFLAGS =-g -Wall -Isrc -Wall -Wextra $(OPTFLAGS)
-dev:	all
+release: CFLAGS += -DNDEBUG
+release: all
 
 $(TARGET): $(A_TARGET)
 	$(CC) -o $@ $(A_TARGET) $(LIBS)
