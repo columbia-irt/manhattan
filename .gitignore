@@ -41,6 +41,7 @@ experiments/vlc-1.1.13
 *.swp
 *.o
 *.a
+*.so
 *.man
 *.Po
 *.tar.gz
