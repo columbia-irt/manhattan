@@ -1,4 +1,5 @@
 # Can ignore specific files
+C
 middleware/sined
 middleware/socks
 middleware/locationMgr/lm
