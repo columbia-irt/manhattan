@@ -1,5 +1,5 @@
-CFLAGS=-g -O2 -Wall -Wextra -Isrc -rdynamic -DNDEBUG $(OPTFLAGS)
-LIBS=-ldl $(OPTLIBS)
+CFLAGS=-g -O2 -Wall -Wextra -Isrc -DNDEBUG $(OPTFLAGS)
+LIBS=-lpthread $(OPTLIBS)
 PREFIX?=/usr/local
 
 SOURCES=$(wildcard src/**/*.c src/*.c)
@@ -8,8 +8,9 @@ OBJECTS=$(patsubst %.c, %.o, $(SOURCES))
 TEST_SRC=$(wildcard tests/*_tests.c)
 TESTS=$(patsubst %.c, %, $(TEST_SRC))
 
-TARGET=build/libsined.a
-SO_TARGET=$(patsubst %.a,%.so, $(TARGET))
+TARGET=bin/sined
+A_TARGET=build/libsined.a
+SO_TARGET=$(patsubst %.a,%.so, $(A_TARGET))
 
 # The Target Build
 all:	$(TARGET) $(SO_TARGET) tests
@@ -17,22 +18,24 @@ all:	$(TARGET) $(SO_TARGET) tests
 dev: 	CFLAGS =-g -Wall -Isrc -Wall -Wextra $(OPTFLAGS)
 dev:	all
 
-$(TARGET):	CFLAGS += -fPIC
-$(TARGET):	build $(OBJECTS)
-	ar rcs $@ $(OBJECTS)
-	ranlib $@
+$(TARGET): $(A_TARGET)
+	$(CC) -o $@ $(A_TARGET) $(LIBS)
 
-$(SO_TARGET):	$(TARGET) $(OBJECTS)
+$(SO_TARGET):	CFLAGS += -rdynamic
+$(SO_TARGET):	$(A_TARGET) $(OBJECTS)
 	$(CC) -shared -o $@ $(OBJECTS)
 
-build:
+$(A_TARGET):	CFLAGS += -fPIC
+$(A_TARGET):	$(OBJECTS)
 	@mkdir -p build
 	@mkdir -p bin
+	ar rcs $@ $(OBJECTS)
+	ranlib $@
 
 # The Unit Tests
 
 .PHONY:	tests
-tests:	CFLAGS += $(TARGET)
+tests:  CFLAGS += -ldl $(LIBS)
 tests:	$(TESTS)
 	sh ./tests/runtests.sh
 
@@ -42,7 +45,7 @@ valgrind:
 # The Cleaner
 
 clean:
-	rm -rf build $(OBJECTS) $(TESTS)
+	rm -rf bin build $(OBJECTS) $(TESTS)
 	rm -f tests/tests.log
 	find . -name "*.gc*" -exec rm {} \;
 	rm -rf 'find . -name "*.dSYM" -print'
@@ -50,8 +53,8 @@ clean:
 #The Install
 
 install:	all
-	install -d $(DESTDIR)/$(PREFIX)/lib/
-	install $(TARGET) $(DESTDIR)/$(PREFIX)/lib/
+	install -d $(DESTDIR)/$(PREFIX)/bin/
+	install $(TARGET) $(DESTDIR)/$(PREFIX)/bin/
 
 #The Checker
 

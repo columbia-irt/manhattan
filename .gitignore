@@ -49,7 +49,8 @@ experiments/vlc-1.1.13
 *.out
 
 # Can also ignore all directories and files in a directory.
-android
+bin
+build
 config.h
 config.log
 config.status
