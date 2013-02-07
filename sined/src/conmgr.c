@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-#include "dbg.h"
 #include "conmgr.h"
 
 #define NEW	0
@@ -17,7 +16,6 @@ struct connection *con_tbl_tail = NULL;
 pthread_mutex_t con_tbl_mutex;		//sabari
 //fpos_t pos;				//sabari
 
-#ifndef NDEBUG
 static const char *str_status[FIN+1] = {"NEW", "SEND", "RECV", "CONNECT" , "LISTEN", "FIN"};
 
 static inline const char * convert_status(int status) {
@@ -27,7 +25,7 @@ static inline const char * convert_status(int status) {
 		return str_status[status];
 }
 
-static inline void print_connections() {
+static inline void dump_connections() {
 	struct connection *conn = con_tbl_head->next;
 	// get the current position 
 	/*	sabari
@@ -39,15 +37,15 @@ static inline void print_connections() {
 		fclose(file);
 	} 
 	*/
-	debug("------------------------");
-	debug("Printing Connection Info");
-	debug("------------------------");
-	debug("Connection: FD\t STAT\t APPID");
+	log_info("------------------------");
+	log_info("Printing Connection Info");
+	log_info("------------------------");
+	log_info("Connection: FD\t STAT\t APPID");
 	while(conn != NULL) {
-		debug("Connection: %d\t %s\t %d", conn->sockfd, convert_status(conn->status), conn->appID);
+		log_info("Connection: %d\t %s\t %d", conn->sockfd, convert_status(conn->status), conn->appID);
 		conn = conn->next;
 	} 	
-	debug("------------------------");
+	log_info("------------------------");
 	/*	sabari
 	if (fsetpos(file,&pos) == -1) 
 	{ 
@@ -57,9 +55,6 @@ static inline void print_connections() {
 	fclose(file); 
 	*/
 }
-#else
-static inline void print_connections() { }
-#endif
 
 static int init_connection_table() {
 	pthread_mutex_lock(&con_tbl_mutex);
@@ -99,7 +94,7 @@ static int add_connection(int sockfd, int appID){
 	con_tbl_tail = conn;
 	pthread_mutex_unlock(&con_tbl_mutex);
 
-	//print_connections();
+	//dump_connections();
 	return 0;
 
 error:
@@ -121,7 +116,7 @@ static void add_child_connection(int sockfd, int new_sockfd){
 	conn->status = NEW;
 	conn->next = NULL;
 	//update_con_tbl_tail(conn);
-	//print_connections();
+	//dump_connections();
 } 
 
 static int update_connection_bind(int sockfd, const void *addr, int addrlen){
@@ -136,7 +131,7 @@ static int update_connection_bind(int sockfd, const void *addr, int addrlen){
 		conn = conn->next;
 	} 	
 
-	//print_connections();
+	//dump_connections();
 	return 1;
 
 }
@@ -151,7 +146,7 @@ static int update_connection_status(int sockfd, int status){
 		}
 		conn = conn->next;
 	} 	
-	//print_connections();
+	//dump_connections();
 	return 1;
 
 }
@@ -187,12 +182,9 @@ void update_con_tbl_tail(struct connection *conn) {
 
 void * main_connection_manager(void *arg)
 {
-	char choice;
-	int socket;
-	int appID;
-
 	init_connection_table();
 
+#ifdef DEBUG_CONMGR
 	printf("This is a debugging version, please use the following command to control connection manager:\n");
 	printf("\ta <sockfd> <appID>\t-\tadd a connection\n");
 	printf("\tc <sockfd> <child_sockfd>\t-\tadd a child connection\n");
@@ -200,6 +192,10 @@ void * main_connection_manager(void *arg)
 	printf("\td <sockfd> <appID>\t-\tdelete an existing connection specified by sockfd and appID\n");
 
 	while (1) {
+		char choice;
+		int socket;
+		int appID;
+
 		scanf("%c %d %d", &choice, &socket, &appID);
 		debug("%c %d %d\n", choice, socket, appID);
 		switch (choice) {
@@ -222,8 +218,13 @@ void * main_connection_manager(void *arg)
 			debug("delete connection");
 			remove_connection(socket, appID);
 		}
-		print_connections();
+#ifndef NDEBUG
+		dump_connections();
+#endif
 	}
+#else
+	while (1);
+#endif
 
 	return NULL;
 }

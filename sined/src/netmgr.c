@@ -1,7 +1,7 @@
 #include <stdlib.h>
 //#include <syslog.h>
 
-#include "dbg.h"
+#include "netmgr.h"
 
 void * main_network_manager(void *arg)
 {

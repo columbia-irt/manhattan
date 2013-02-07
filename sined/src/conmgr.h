@@ -1,7 +1,8 @@
-#ifndef _CONMGR_H_
-#define _CONMGR_H_
+#ifndef _SINE_CONMGR_H_
+#define _SINE_CONMGR_H_
 
 #include <netinet/in.h>
+#include "sined.h"
 
 struct connection {
 	int sockfd;
@@ -18,5 +19,6 @@ void * main_connection_manager(void *arg);
 
 extern struct connection *con_tbl_head;
 extern struct connection *con_tbl_tail;
+extern pthread_mutex_t con_tbl_mutex;
 
 #endif

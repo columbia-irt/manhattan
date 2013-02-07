@@ -1,5 +1,5 @@
 CFLAGS=-g -O2 -Wall -Wextra -Isrc $(OPTFLAGS)
-LIBS=-lpthread $(OPTLIBS)
+LIBS=-lpthread -lxml2 $(OPTLIBS)
 PREFIX?=/usr/local
 
 SOURCES=$(wildcard src/**/*.c src/*.c)
@@ -17,6 +17,9 @@ all:	$(TARGET) $(SO_TARGET) tests
 
 release: CFLAGS += -DNDEBUG
 release: all
+
+conmgr: CFLAGS += -DDEBUG_CONMGR
+conmgr: all
 
 $(TARGET): $(A_TARGET)
 	$(CC) -o $@ $(A_TARGET) $(LIBS)
