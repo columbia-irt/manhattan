@@ -7,6 +7,7 @@
 #include "netmgr.h"
 #include "conmgr.h"
 #include "locmgr.h"
+#include "socks.h"
 #include "pe.h"
 
 int main()
@@ -14,6 +15,7 @@ int main()
 	pthread_t thread_netmgr;
 	pthread_t thread_conmgr;
 	pthread_t thread_locmgr;
+	pthread_t thread_socks;
 	pthread_t thread_pe;
 
 	parse_policies(POLICY_PATH);
@@ -22,6 +24,7 @@ int main()
 	pthread_create(&thread_netmgr, NULL, main_network_manager, NULL);
 	pthread_create(&thread_conmgr, NULL, main_connection_manager, NULL);
 	pthread_create(&thread_locmgr, NULL, main_location_manager, NULL);
+	pthread_create(&thread_socks, NULL, main_socks_server, NULL);
 	pthread_create(&thread_pe, NULL, main_policy_engine, NULL);
 
 	//syslog(LOG_INFO, "hello world!\n");
@@ -30,6 +33,7 @@ int main()
 	pthread_join(thread_netmgr, NULL);
 	pthread_join(thread_conmgr, NULL);
 	pthread_join(thread_locmgr, NULL);
+	pthread_join(thread_socks, NULL);
 	pthread_join(thread_pe, NULL);
 	//closelog();
 
