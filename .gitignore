@@ -1,5 +1,6 @@
 # Can ignore specific files
 C
+sined/src/sined
 middleware/sined
 middleware/socks
 middleware/locationMgr/lm
@@ -39,6 +40,7 @@ experiments/vlc-1.1.13
 # Use wildcards as well
 *~
 *.swp
+*.swo
 *.o
 *.a
 *.so

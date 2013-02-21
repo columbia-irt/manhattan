@@ -1,67 +1,32 @@
-CFLAGS=-g -O2 -Wall -Wextra -Isrc $(OPTFLAGS)
-LIBS=-lpthread -lxml2 $(OPTLIBS)
-PREFIX?=/usr/local
+TOPDIR = .
+include $(TOPDIR)/Makefile.inc
 
-SOURCES=$(wildcard src/**/*.c src/*.c)
-OBJECTS=$(patsubst %.c, %.o, $(SOURCES))
+EXE = (EXEDIR)/sined
+OBJLIBS = (LIBDIR)/libsine.a
+TARGET = $(EXE)
+CFLAGS = -DNDEBUG
+export CFLAGS
 
-TEST_SRC=$(wildcard tests/*_tests.c)
-TESTS=$(patsubst %.c, %, $(TEST_SRC))
+all: $(TARGET)
 
-TARGET=bin/sined
-A_TARGET=build/libsined.a
-SO_TARGET=$(patsubst %.a,%.so, $(A_TARGET))
+$(EXE): $(OBJLIBS)
+	$(MAKE) -C $(EXEDIR)
 
-# The Target Build
-all:	$(TARGET) $(SO_TARGET) tests
+$(OBJLIBS):
+	$(MAKE) -C $(LIBDIR)
 
-release: CFLAGS += -DNDEBUG
-release: all
+install: install_exe install_lib
 
-conmgr: CFLAGS += -DDEBUG_CONMGR
-conmgr: all
+install_exe:
+	$(MAKE) -C $(EXEDIR) install
 
-$(TARGET): $(A_TARGET)
-	$(CC) -o $@ $(A_TARGET) $(LIBS)
+install_lib:
+	$(MAKE) -C $(LIBDIR) install
 
-$(SO_TARGET):	CFLAGS += -rdynamic
-$(SO_TARGET):	$(A_TARGET) $(OBJECTS)
-	$(CC) -shared -o $@ $(OBJECTS)
+clean: clean_exe clean_lib
 
-$(A_TARGET):	CFLAGS += -fPIC
-$(A_TARGET):	$(OBJECTS)
-	@mkdir -p build
-	@mkdir -p bin
-	ar rcs $@ $(OBJECTS)
-	ranlib $@
+clean_exe:
+	$(MAKE) -C $(EXEDIR) clean
 
-# The Unit Tests
-
-.PHONY:	tests
-tests:  CFLAGS += -ldl $(LIBS)
-tests:	$(TESTS)
-	sh ./tests/runtests.sh
-
-valgrind:
-	VALGRIND="valgrind --log-file=/tmp/valgrind-%p.log" $(MAKE)
-
-# The Cleaner
-
-clean:
-	rm -rf bin build $(OBJECTS) $(TESTS)
-	rm -f tests/tests.log
-	find . -name "*.gc*" -exec rm {} \;
-	rm -rf 'find . -name "*.dSYM" -print'
-
-#The Install
-
-install:	all
-	install -d $(DESTDIR)/$(PREFIX)/bin/
-	install $(TARGET) $(DESTDIR)/$(PREFIX)/bin/
-
-#The Checker
-
-BADFUNCS='[^_.>a-zA-Z0-9](str(n?cpy|n?cat|xfrm|n?dup|str|pbrk|tok|_)|stpn?cpy|a?sn?printf|byte_)'
-check:
-	@echo Files with potentially dangerous functions.
-	@egrep $(BADFUNCS) $(SOURCES) || true
+clean_lib:
+	$(MAKE) -C $(LIBDIR) clean
