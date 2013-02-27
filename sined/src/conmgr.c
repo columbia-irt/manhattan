@@ -5,9 +5,12 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <arpa/inet.h>
 
+#include "pe.h"
 #include "conmgr.h"
 
+/*
 #define NEW		0
 #define SEND		1
 #define RECV		2
@@ -15,23 +18,67 @@
 #define ESTABLISHED	4
 #define LISTENING	5
 #define FIN		6
+*/
 
 struct connection *con_tbl_head = NULL;
 struct connection *con_tbl_tail = NULL;
-pthread_mutex_t con_tbl_mutex;		//sabari
+pthread_mutex_t con_tbl_mutex = PTHREAD_MUTEX_INITIALIZER;
 //fpos_t pos;				//sabari
 
-static const char *str_status[FIN+1] = {"NEW", "SEND", "RECV", "CONNECTING" , "ESTABLISHED", "LISTENING", "FIN"};
+//static const char *str_status[FIN+1] = {"NEW", "SEND", "RECV", "CONNECTING" , "ESTABLISHED", "LISTENING", "FIN"};
+static const char *str_proto[CONMGR_PROTO_NUM]
+	= {"UNSPEC", "IPv4", "HIP", "MIPv6"};
 
-static inline const char * convert_status(int status) {
-	if (status < 0 || status > FIN)
-		return "UNKNOWN";
+static inline const char * convert_proto(int protocol) {
+	if (protocol < 0 || protocol >= CONMGR_PROTO_NUM)
+		return "INVALID";
 	else
-		return str_status[status];
+		return str_proto[protocol];
 }
 
-static inline void dump_connections() {
-	struct connection *conn = con_tbl_head->next;
+/* not thread safe, must be called while holding con_tbl_mutex */
+static inline void dump_one_connection(struct connection *conn)
+{
+	struct sockaddr_in *addr4;
+	struct sockaddr_in6 *addr6;
+	char str_addr[INET6_ADDRSTRLEN + 1];
+	char str_addr_port[INET6_ADDRSTRLEN + 1];
+
+	//pthread_mutex_lock(&conn->mutex);	//hold con_tbl_mutex
+	if (conn->addr) {
+		switch (conn->addr->sa_family) {
+		case AF_INET:
+			addr4 = (struct sockaddr_in *)conn->addr;
+			inet_ntop(AF_INET, &addr4->sin_addr,
+					str_addr, INET_ADDRSTRLEN);
+			sprintf(str_addr_port, "%s:%d", str_addr,
+					ntohs(addr4->sin_port));
+			break;
+		case AF_INET6:
+			addr6 = (struct sockaddr_in6 *)conn->addr;
+			inet_ntop(AF_INET6, &addr6->sin6_addr,
+					str_addr, INET6_ADDRSTRLEN);
+			sprintf(str_addr_port, "[%s]:%d", str_addr,
+					ntohs(addr6->sin6_port));
+			break;
+		default:
+			strcpy(str_addr_port, "(unknown address)");
+		}
+	} else {
+		strcpy(str_addr_port, "(null)");
+	}
+	log_info("    Connection: %-5d %5d %-6s %4d %s\t%s",
+		conn->appID, conn->sockfd, convert_proto(conn->protocol),
+		conn->active_rule, str_addr_port, conn->app_desc);
+	//pthread_mutex_unlock(&conn->mutex);	//hold con_tbl_mutex
+}
+
+/* TODO: to string */
+void conmgr_dump_connections() {
+	struct connection *conn;
+
+	pthread_mutex_lock(&con_tbl_mutex);
+
 	// get the current position 
 	/*	sabari
 	FILE *file = fopen("connections.out","w"); 
@@ -45,12 +92,12 @@ static inline void dump_connections() {
 	log_info("------------------------");
 	log_info("Printing Connection Info");
 	log_info("------------------------");
-	log_info("Connection: FD\t STAT\t APPID");
-	while(conn != NULL) {
-		log_info("Connection: %d\t %s\t %d", conn->sockfd, convert_status(conn->status), conn->appID);
-		conn = conn->next;
-	} 	
+	log_info("Connection: APPID    FD PROTO  RULE REMOTE             \tDESC");
+	for (conn = con_tbl_head->next; conn != NULL; conn = conn->next)
+		dump_one_connection(conn);
 	log_info("------------------------");
+
+	pthread_mutex_unlock(&con_tbl_mutex);
 	/*	sabari
 	if (fsetpos(file,&pos) == -1) 
 	{ 
@@ -61,6 +108,43 @@ static inline void dump_connections() {
 	*/
 }
 
+/* get application path through pid, return value must be freed */
+static inline char * get_app_path(pid_t pid)
+{
+	char link_path[PATH_BUF_SIZE];
+	char buf[LINE_BUF_SIZE];
+	char *app_path = NULL;
+	int r;
+
+	sprintf(link_path, "%s/%d/%s", PROC_PATH, pid, EXEFILE_NAME);
+	debug("link path: %s", link_path);
+
+	r = readlink(link_path, buf, LINE_BUF_SIZE);
+	check(r >= 0, "readlink %s", link_path);
+
+	debug("app path length: %d", r);
+	app_path = malloc(r + 1);
+	check(app_path, "malloc failure");
+
+	if (r < LINE_BUF_SIZE) {
+		strncpy(app_path, buf, r);
+	} else {
+		check(readlink(link_path, app_path, r + 1) >= 0,
+			"readlink %s for the second time", link_path);
+	}
+	app_path[r] = '\0';
+
+	debug("app path for pid %d: %s", pid, app_path);
+	return app_path;
+
+error:
+	if (app_path) {
+		free(app_path);
+		app_path = NULL;
+	}
+	return NULL;
+}
+
 static int init_connection_table() {
 	pthread_mutex_lock(&con_tbl_mutex);
 	if(!con_tbl_head) {
@@ -68,7 +152,6 @@ static int init_connection_table() {
 		memset(con_tbl_head, 0, sizeof(struct connection));
 		check(con_tbl_head, "Failed to allocate space for connection table (%s)", strerror(errno));
 		con_tbl_head->next = NULL;
-		con_tbl_head->status = -1;
 		con_tbl_tail = con_tbl_head;
 		log_info("Connection Manager initialized");
 	}
@@ -90,26 +173,30 @@ static int add_connection(int appID, int sockfd,
 	memset(conn, 0, sizeof(struct connection));
 
 	conn->appID = appID;
-	conn->sockfd = sockfd;
-	conn->parent_sockfd = 0;
-	conn->policyID = 0;
-	conn->status = ESTABLISHED;
-	conn->addr = NULL;
-	conn->next = NULL;
+	conn->app_desc = get_app_path(appID);
 
+	conn->sockfd = sockfd;
+	conn->active_rule = 0;
+	conn->protocol = CONMGR_PROTO_UNSPEC;
+
+	conn->addr = NULL;
+	debug("addrlen: %d", addrlen);
 	conn->addr = malloc(addrlen);
 	check(conn->addr, "malloc %d bytes for conn->addr failure", addrlen);
 	memcpy(conn->addr, addr, addrlen);
 	conn->addrlen = addrlen;
 
-	conn->app_desc = get_app_path(appID);
+	//pthread_mutex_init(&conn->mutex, NULL);	//hold con_tbl_mutex
+	conn->next = NULL;
+	dump_one_connection(conn);
 
 	pthread_mutex_lock(&con_tbl_mutex);
+	evaluate(conn);
 	con_tbl_tail->next = conn;
 	con_tbl_tail = conn;
 	pthread_mutex_unlock(&con_tbl_mutex);
 
-	//dump_connections();
+	//conmgr_dump_connections();
 	return 0;
 
 error:
@@ -122,6 +209,7 @@ error:
 	return -1;
 } 
 
+/* sabari
 static void add_child_connection(int sockfd, int new_sockfd){
 	struct connection *conn;
 	conn = calloc(1, sizeof(struct connection));
@@ -137,10 +225,11 @@ static void add_child_connection(int sockfd, int new_sockfd){
 	conn->status = ESTABLISHED;
 	conn->next = NULL;
 	//update_con_tbl_tail(conn);
-	//dump_connections();
+	//conmgr_dump_connections();
 } 
 
-static int update_connection_bind(int sockfd, const void *addr, int addrlen){
+static int update_connection_bind(int sockfd, struct sockaddr *addr,
+					socklen_t addrlen) {
 	
 	struct connection *conn = con_tbl_head->next;
 	while(conn->next != NULL) {
@@ -152,7 +241,7 @@ static int update_connection_bind(int sockfd, const void *addr, int addrlen){
 		conn = conn->next;
 	} 	
 
-	//dump_connections();
+	//conmgr_dump_connections();
 	return 1;
 
 }
@@ -167,22 +256,33 @@ static int update_connection_status(int sockfd, int status){
 		}
 		conn = conn->next;
 	} 	
-	//dump_connections();
+	//conmgr_dump_connections();
 	return 1;
 
 }
+*/
 
 static void free_connection(struct connection *conn) {
+	//pthread_mutex_lock(&conn->mutex);	//hold con_tbl_mutex
+
 	if (conn->addr)
 		free(conn->addr);
 	if (conn->app_desc)
 		free(conn->app_desc);
+
+	//pthread_mutex_unlock(&conn->mutex);	//hold con_tbl_mutex
+	//pthread_mutex_destroy(&conn->mutex);	//hold con_tbl_mutex
+
 	free(conn);
 }
 
-static void remove_connection(int sockfd, int appID) {
-	struct connection *pred_conn = con_tbl_head;
-	struct connection *curr_conn = pred_conn->next;
+static void remove_connection(int appID, int sockfd) {
+	struct connection *pred_conn;
+	struct connection *curr_conn;
+
+	pthread_mutex_lock(&con_tbl_mutex);
+	pred_conn = con_tbl_head;
+	curr_conn = pred_conn->next;
 
 	while (curr_conn != NULL) {
 		if (curr_conn->sockfd == sockfd &&
@@ -200,33 +300,8 @@ static void remove_connection(int sockfd, int appID) {
 			curr_conn = pred_conn->next;
 		}
 	} 	
-}
 
-/* get application path through pid, return value must be freed */
-static inline char * get_app_path(pid_t pid)
-{
-	struct stat sb;
-	char link_path[PATH_BUF_SIZE];
-	char *app_path = NULL;
-	ssize_t len;
-
-	sprintf(link_path, "%s/%d/%s", PROC_PATH, con_msg.pid, EXEFILE_NAME);
-	check(!lstat(link_path, &sb), "lstat %s", link_path);
-
-	len = sb.st_size + 1;
-	app_path = malloc(len);
-	check(app_path, "malloc failure");
-
-	check(readlink(link_path, app_path, len) > 0,
-			"readlink %s", link_path)
-	app_path[len] = '\0';
-	return;
-
-error:
-	if (app_path) {
-		free(app_path);
-		app_path = NULL;
-	}
+	pthread_mutex_unlock(&con_tbl_mutex);
 }
 
 /* sabari
@@ -261,7 +336,7 @@ void * main_connection_manager(void *arg)
 			debug("new connection");
 			add_connection(appID, socket, "", 0);
 			break;
-		case 'c':
+		/*case 'c':
 			debug("child connection");
 			add_child_connection(socket, appID);
 			break;
@@ -269,19 +344,18 @@ void * main_connection_manager(void *arg)
 		case 'u':
 			debug("update status");
 			update_connection_status(socket, appID);
-			break;
+			break; */
 		case 'r':
 		case 'd':
-			debug("delete connection");
-			remove_connection(socket, appID);
+			debug("remove connection");
+			remove_connection(appID, socket);
 		}
-		dump_connections();
+		conmgr_dump_connections();
 	}
 #else
 	int sock;
 	struct sockaddr_un name;
-	char path[PATH_BUF_SIZE];
-	char buf[SOCK_BUF_SIZE];
+	//char buf[SOCK_BUF_SIZE];
 	conmsg_t con_msg;
 
 	sock = socket(AF_UNIX, SOCK_DGRAM, 0);
@@ -303,7 +377,7 @@ void * main_connection_manager(void *arg)
 				con_msg.addrlen);
 			break;
 		case CONMGR_CMD_REMOVE:
-			remove_connection();
+			remove_connection(con_msg.pid, con_msg.sockfd);
 			break;
 		default:
 			log_warn("unknown command");

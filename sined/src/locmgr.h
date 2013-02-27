@@ -3,7 +3,7 @@
 
 #include "sined.h"
 
-int get_location(char *loc);
+int locmgr_get_location(char *loc);
 
 void * main_location_manager(void *arg);
 

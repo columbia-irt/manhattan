@@ -51,7 +51,7 @@ struct sock_ipv4 {
 
 struct sock_domain {
 	__u8	nbytes;
-	__u8	data[258];	/* max 2^8 bytes of name and 2 bytes of port */
+	__u8	data[257];	/* max 2^8-1 bytes of name and 2 bytes of port */
 };
 
 struct sock_ipv6 {

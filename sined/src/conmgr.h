@@ -7,16 +7,23 @@
 #define CONMGR_CMD_ADD		0
 #define CONMGR_CMD_REMOVE	1
 
+#define CONMGR_PROTO_UNSPEC	0
+#define CONMGR_PROTO_IPV4	1
+#define CONMGR_PROTO_HIP	2
+#define CONMGR_PROTO_MIPV6	3
+#define CONMGR_PROTO_NUM	4
+
 struct connection {
 	int appID;
-	int sockfd;
-	int parent_sockfd;
-	int policyID;
-	int status;
-	socklen_t addrlen;
-	const struct sockaddr *addr;
 	char *app_desc;
 
+	int sockfd;
+	socklen_t addrlen;
+	struct sockaddr *addr;
+	int protocol;
+	int active_rule;
+
+	//pthread_mutex_t mutex;	//hold con_tbl_mutex
 	struct connection *next;
 };
 
@@ -30,6 +37,7 @@ typedef struct conmsg {
 	
 
 void * main_connection_manager(void *arg);
+void conmgr_dump_connections();
 
 extern struct connection *con_tbl_head;
 extern struct connection *con_tbl_tail;

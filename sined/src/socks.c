@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include <netdb.h>
 
 #include <sine.h>
 #include "conmgr.h"
@@ -18,6 +19,7 @@ static int serv_sock = -1;
 static fd_set read_fds;
 
 /* for now, just assume that each socket is owned by only one process */
+/* only the main thread of socks server will call this function */
 #ifdef SOCKS_IPV6
 static pid_t get_pid_by_sockaddr(struct sockaddr_in6 *sa)
 #else
@@ -31,8 +33,9 @@ static pid_t get_pid_by_sockaddr(struct sockaddr_in *sa)
 	char buf[LINE_BUF_SIZE];
 	char path[PATH_BUF_SIZE];
 	struct dirent *ent;
-	DIR *proc, *fd_dir;
-	FILE *fp;
+	DIR *proc = NULL;
+	DIR *fd_dir = NULL;
+	FILE *fp = NULL;
 	char *local, *remote;
 	char *saveptr;
 	int i;
@@ -100,6 +103,7 @@ static pid_t get_pid_by_sockaddr(struct sockaddr_in *sa)
 		break;
 	}
 	fclose(fp);
+	fp = NULL;
 	check(inode_desc[0] != '\0',
 		"socket (src: %s, dst: %s) not found in %s or %s",
 		src, dst, PROC_TCP_PATH, PROC_TCP6_PATH);
@@ -116,7 +120,7 @@ static pid_t get_pid_by_sockaddr(struct sockaddr_in *sa)
 		sprintf(path, "%s/%s/%s", PROC_PATH, ent->d_name, FDDIR_NAME);
 		i = strlen(path);	/* for later concatenation */
 		fd_dir = opendir(path);
-		if (fd_dir == NULL)	/* does not have fd dir */
+		if (!fd_dir)	/* does not have fd dir */
 			continue;
 
 		while ((ent = readdir(fd_dir)) != NULL) {
@@ -124,12 +128,24 @@ static pid_t get_pid_by_sockaddr(struct sockaddr_in *sa)
 			if (readlink(path, buf, PATH_BUF_SIZE) < 0)
 				continue;
 			buf[strlen(inode_desc)] = '\0';
-			if (!strcmp(inode_desc, buf))
+			if (!strcmp(inode_desc, buf)) {
+				closedir(proc);
+				closedir(fd_dir);
 				return pid;
+			}
 		}
+
+		closedir(fd_dir);
 	}
 
 error:
+	if (fp)
+		fclose(fp);
+	if (proc)
+		closedir(proc);
+	if (fd_dir)
+		closedir(fd_dir);
+
 	return -1;
 }
 
@@ -210,11 +226,11 @@ static void * forward_loop(void *arg)
 				break;
 			}
 			check(len > 0, "cli_sock %d recv %d", cli_sock, len);
-			debug("%d bytes from client to remote", len);
+			//debug("%d bytes from client to remote", len);
 
 			r = send(rem_sock, buf, len, 0);
 			check(r > 0, "rem_sock %d send %d", rem_sock, r);
-			debug("%d bytes forwarded", r);
+			//debug("%d bytes forwarded", r);
 			if (r != len)
 				log_warn("sending exception - %d/%d", r, len);
 
@@ -225,11 +241,11 @@ static void * forward_loop(void *arg)
 				break;
 			}
 			check(len > 0, "rem_sock %d recv %d", rem_sock, r);
-			debug("%d bytes from remote to client", len);
+			//debug("%d bytes from remote to client", len);
 
 			r = send(cli_sock, buf, len, 0);
 			check(r > 0, "cli_sock %d send %d", rem_sock, r);
-			debug("%d bytes forwarded", r);
+			//debug("%d bytes forwarded", r);
 			if (r != len)
 				log_warn("sending exception - %d/%d", r, len);
 		}
@@ -261,6 +277,11 @@ static void socks_establish(int cli_sock, pid_t pid)
 	struct sockaddr_in rem_addr_v4;
 	struct sockaddr_in6 rem_addr_v6;
 	socklen_t addrlen;
+
+	char node[LINE_BUF_SIZE];
+	char service[LINE_BUF_SIZE];
+	struct addrinfo hints;
+	struct addrinfo *result, *rp;
 
 	int rem_sock = -1;
 	int socket_family;
@@ -321,9 +342,62 @@ static void socks_establish(int cli_sock, pid_t pid)
 			inet_ntoa(rem_addr_v4.sin_addr),
 			ntohs(rem_addr_v4.sin_port));
 		break;
+
 	case SOCKS_ATYP_DOMAIN:
-		/* TODO */
+		/* TODO fix hard code */
+		addrlen = socks_req.dst.domain.nbytes;
+		debug("domain received (%d bytes): %s", addrlen,
+			socks_req.dst.domain.data);
+
+		sprintf(service, "%u", ntohs(*(unsigned short *)
+				(socks_req.dst.domain.data + addrlen)));
+		if (*socks_req.dst.domain.data == '[') {
+			addrlen -= 2;
+			strncpy(node, (char *)socks_req.dst.domain.data + 1,
+				addrlen);
+			node[addrlen] = '\0';
+		} else {
+			strncpy(node, (char *)socks_req.dst.domain.data,
+				addrlen);
+			node[addrlen] = '\0';
+		}
+		debug("node: %s, service: %s", node, service);
+
+		memset(&hints, 0, sizeof(struct addrinfo));
+		hints.ai_family = AF_UNSPEC;
+		hints.ai_socktype = SOCK_STREAM;
+		hints.ai_flags = 0;
+		hints.ai_protocol = 0;	/* any protocol */
+		check(!getaddrinfo(node, service, &hints, &result),
+			"getaddrinfo");
+
+		for (rp = result; rp != NULL; rp = rp->ai_next) {
+			if (rp->ai_family == AF_INET) {
+				memcpy(&rem_addr_v4, rp->ai_addr,
+					rp->ai_addrlen);
+				socket_family = AF_INET;
+				addrlen = rp->ai_addrlen;
+				rem_addr_ptr = (struct sockaddr*)&rem_addr_v4;
+
+				debug("remote addr: %s, port: %d",
+					inet_ntoa(rem_addr_v4.sin_addr),
+					ntohs(rem_addr_v4.sin_port));
+				break;
+			} else if (rp->ai_family == AF_INET6) {
+				memcpy(&rem_addr_v6, rp->ai_addr,
+					rp->ai_addrlen);
+				socket_family = AF_INET6;
+				addrlen = rp->ai_addrlen;
+				rem_addr_ptr = (struct sockaddr*)&rem_addr_v6;
+
+				debug("remote addr: , port: %d",
+					/* TODO: output ipv6 address */
+					ntohs(rem_addr_v6.sin6_port));
+				break;
+			}
+		}
 		break;
+
 	case SOCKS_ATYP_IPV6:
 		socket_family = AF_INET6;
 		rem_addr_v6.sin6_family = AF_INET6;
@@ -332,7 +406,11 @@ static void socks_establish(int cli_sock, pid_t pid)
 		rem_addr_v6.sin6_port = socks_req.dst.ipv6.port;
 		rem_addr_ptr = (struct sockaddr *)&rem_addr_v6;
 		addrlen = sizeof(rem_addr_v6);
+		debug("remote addr: , port: %d",
+			/* TODO: output ipv6 address */
+			ntohs(rem_addr_v6.sin6_port));
 		break;
+
 	default:
 		break;
 	}
@@ -386,7 +464,8 @@ static void socks_establish(int cli_sock, pid_t pid)
 		con_msg.cmd = CONMGR_CMD_ADD;
 		con_msg.pid = pid;
 		con_msg.sockfd = rem_sock;
-		memcpy(&con_msg.dst, rem_addr_ptr, addrlen);
+		memcpy(&con_msg.addr, rem_addr_ptr, addrlen);
+		con_msg.addrlen = addrlen;
 		if (sine_sendto_conmgr(&con_msg, sizeof(conmsg_t)) < 0)
 			log_warn("Failed to contact connection manager");
 

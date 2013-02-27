@@ -8,6 +8,8 @@ HEADERS = sine.h
 TARGET = libsine.a
 SO_TARGET = $(patsubst %.a, %.so, $(TARGET))
 
+default: $(TARGET)
+
 all: $(TARGET) $(SO_TARGET)
 
 $(TARGET): CFLAGS += -fPIC
