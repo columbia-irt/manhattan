@@ -5,7 +5,7 @@
 
 #include "sined.h"
 
-void * main_socks_server(void *arg);
+int init_socks_server(pthread_t *socks_thread_ptr);
 
 #define SOCKS_V4	4
 #define SOCKS_V5	5

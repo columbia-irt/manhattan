@@ -35,9 +35,10 @@ typedef struct conmsg {
 	struct sockaddr_storage addr;
 } conmsg_t;
 	
-
-void * main_connection_manager(void *arg);
+int init_connection_manager(pthread_t *conmgr_thread_ptr);
 void conmgr_dump_connections();
+
+extern int conmgr_sock;
 
 extern struct connection *con_tbl_head;
 extern struct connection *con_tbl_tail;

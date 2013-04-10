@@ -279,13 +279,30 @@ static void evaluate_all()
 	pthread_mutex_unlock(&con_tbl_mutex);
 }
 
-void * main_policy_engine(void *arg)
+static void * pe_main_loop()
 {
-	while (1) {
+	while (!exit_flag) {
 		if (need_evaluation) {
 			debug("policy engine triggered");
 			evaluate_all();
 			need_evaluation = 0;
 		}
 	}
+
+	log_info("policy engine exiting...");
+
+	return NULL;
+}
+
+int init_policy_engine(pthread_t *pe_thread_ptr)
+{
+	parse_policies(CONF_POLICY_PATH);
+	check(!pthread_create(pe_thread_ptr, NULL, pe_main_loop, NULL),
+		"Failed to create thread for policy engine");
+
+	debug("Policy Engine initialized");
+	return 0;
+
+error:
+	return -1;
 }

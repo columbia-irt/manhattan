@@ -121,7 +121,6 @@ int serv_init(char *ifs)
     error = getnameinfo(res->ai_addr, res->ai_addrlen,
 			hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
 			NI_NUMERICHOST | NI_NUMERICSERV);
-	printf("yan - ai_addrlen %d=======\n", res->ai_addrlen);
     if (error) {
       /* getnameinfo error */
       return(-1);

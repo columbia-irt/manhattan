@@ -16,7 +16,7 @@
 #define LISTEN_BACKLOG	64
 
 static int serv_sock = -1;
-static fd_set read_fds;
+static fd_set socks_fds;
 
 /* for now, just assume that each socket is owned by only one process */
 /* only the main thread of socks server will call this function */
@@ -117,7 +117,8 @@ static pid_t get_pid_by_sockaddr(struct sockaddr_in *sa)
 		if (strcmp(buf, ent->d_name))	/* not a pid */
 			continue;
 
-		sprintf(path, "%s/%s/%s", PROC_PATH, ent->d_name, FDDIR_NAME);
+		sprintf(path, "%s/%s/%s", PROC_PATH,
+			ent->d_name, PROC_FD_DIRNAME);
 		i = strlen(path);	/* for later concatenation */
 		fd_dir = opendir(path);
 		if (!fd_dir)	/* does not have fd dir */
@@ -149,42 +150,6 @@ error:
 	return -1;
 }
 
-static int init_server()
-{
-	const int optval = 1;	/* TODO: what's this ? */
-	sa_family_t sa_family;
-#ifdef SOCKS_IPV6
-	struct sockaddr_in6 serv_addr;
-	sa_family = PF_INET6;
-#else
-	struct sockaddr_in serv_addr;
-	sa_family = PF_INET;
-#endif
-
-	serv_sock = socket(sa_family, SOCK_STREAM, IPPROTO_TCP);
-	check(serv_sock >= 0, "Create ipv6 socket");
-	check(!setsockopt(serv_sock, SOL_SOCKET, SO_REUSEADDR,
-			(char *)&optval, sizeof(optval)),
-		"Set socket options for serv_sock");
-#ifdef SOCKS_IPV6
-	serv_addr.sin6_family = AF_INET6;
-	serv_addr.sin6_addr = in6addr_any;
-	serv_addr.sin6_port = htons(SOCKS_PORT);
-#else
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = INADDR_ANY;
-	serv_addr.sin_port = htons(SOCKS_PORT);
-#endif
-	check(!bind(serv_sock, (struct sockaddr *)&serv_addr,
-		sizeof(serv_addr)), "Bind serv_sock");
-	check(!listen(serv_sock, SOCKS_LISTEN), "Set serv_sock listen");
-
-	return 0;
-
-error:
-	return -1;
-}
-
 static void * forward_loop(void *arg)
 {
 	int cli_sock = *(int *)arg;
@@ -203,9 +168,9 @@ static void * forward_loop(void *arg)
 	free(arg);	/* solve racing issues */
 	debug("cli_sock: %d (pid %d), rem_sock: %d", cli_sock, pid, rem_sock);
 
-	max_fd = (cli_sock > rem_sock) ? cli_sock : rem_sock;
+	max_fd = MAX(cli_sock, rem_sock);
 
-	while (1) {
+	while (!exit_flag) {
 		FD_ZERO(&forward_fds);
 		FD_SET(cli_sock, &forward_fds);
 		FD_SET(rem_sock, &forward_fds);
@@ -234,7 +199,9 @@ static void * forward_loop(void *arg)
 			if (r != len)
 				log_warn("sending exception - %d/%d", r, len);
 
-		} else if (FD_ISSET(rem_sock, &forward_fds)) {
+		}
+
+		if (FD_ISSET(rem_sock, &forward_fds)) {
 			len = recv(rem_sock, buf, sizeof(buf), 0);
 			if (len == 0) {
 				log_info("remote side has closed the socket");
@@ -482,8 +449,9 @@ error:
 	close(cli_sock);
 }
 
-void * main_socks_server(void *arg)
+static void * socks_main_loop()
 {
+	int max_fd;
 	int cli_sock;
 	int r;
 
@@ -495,18 +463,22 @@ void * main_socks_server(void *arg)
 	socklen_t len;
 	pid_t pid;
 
-	check(!init_server(), "Failed to initialize socks server");
-	debug("socks server has initialized");
+	max_fd = MAX(serv_sock, exit_pipe[0]);
 
-	while (1) {
-		FD_ZERO(&read_fds);
-		FD_SET(serv_sock, &read_fds);
+	while (!exit_flag) {
+		FD_ZERO(&socks_fds);
+		FD_SET(serv_sock, &socks_fds);
+		FD_SET(exit_pipe[0], &socks_fds);
 
 		/* TODO: except fds */
-		r = select(serv_sock + 1, &read_fds, NULL, NULL, NULL);
-		check(r > 0, "Select exception");
+		r = select(max_fd + 1, &socks_fds, NULL, NULL, NULL);
+		check(r >= 0, "Select exception");
+		debug("select returns %d", r);
 
-		if (FD_ISSET(serv_sock, &read_fds)) {
+		if (FD_ISSET(exit_pipe[0], &socks_fds))
+			break;
+
+		if (FD_ISSET(serv_sock, &socks_fds)) {
 			cli_sock = accept(serv_sock,
 				(struct sockaddr *)&sa, &len);
 			if (cli_sock < 0)
@@ -522,11 +494,60 @@ void * main_socks_server(void *arg)
 		}
 	}
 
+error:
+	if (serv_sock >= 0) {
+		close(serv_sock);
+		serv_sock = -1;
+	}
+
+	libsine_exit();
+
+	//return (void *)-1;	/* TODO: (int)status */
+	log_info("socks server exiting...");
+	return NULL;
+}
+
+int init_socks_server(pthread_t *socks_thread_ptr)
+{
+	const int optval = 1;	/* TODO: what's this ? */
+	sa_family_t sa_family;
+#ifdef SOCKS_IPV6
+	struct sockaddr_in6 serv_addr;
+	sa_family = PF_INET6;
+#else
+	struct sockaddr_in serv_addr;
+	sa_family = PF_INET;
+#endif
+
+	serv_sock = socket(sa_family, SOCK_STREAM, IPPROTO_TCP);
+	check(serv_sock >= 0, "Create ipv6 socket");
+	check(!setsockopt(serv_sock, SOL_SOCKET, SO_REUSEADDR,
+			(char *)&optval, sizeof(optval)),
+		"Set socket options for serv_sock");
+#ifdef SOCKS_IPV6
+	serv_addr.sin6_family = AF_INET6;
+	serv_addr.sin6_addr = in6addr_any;
+	serv_addr.sin6_port = htons(SOCKS_PORT);
+#else
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = INADDR_ANY;
+	serv_addr.sin_port = htons(SOCKS_PORT);
+#endif
+	check(!bind(serv_sock, (struct sockaddr *)&serv_addr,
+		sizeof(serv_addr)), "Bind serv_sock");
+	check(!listen(serv_sock, SOCKS_LISTEN), "Set serv_sock to listen");
+
+	check(!pthread_create(socks_thread_ptr, NULL, socks_main_loop, NULL),
+		"Failed to create thread for socks server");
+
+	debug("SOCKS server initialized");
 	return 0;
 
 error:
-	if (serv_sock >= 0)
+	if (serv_sock >= 0) {
 		close(serv_sock);
+		serv_sock = -1;
+	}
 
-	return (void *)-1;	/* TODO: (int)status */
+	return -1;
 }

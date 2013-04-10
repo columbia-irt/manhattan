@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -20,16 +21,19 @@
 #define FIN		6
 */
 
+int conmgr_sock = -1;
+
 struct connection *con_tbl_head = NULL;
 struct connection *con_tbl_tail = NULL;
 pthread_mutex_t con_tbl_mutex = PTHREAD_MUTEX_INITIALIZER;
 //fpos_t pos;				//sabari
 
 //static const char *str_status[FIN+1] = {"NEW", "SEND", "RECV", "CONNECTING" , "ESTABLISHED", "LISTENING", "FIN"};
-static const char *str_proto[CONMGR_PROTO_NUM]
-	= {"UNSPEC", "IPv4", "HIP", "MIPv6"};
+static const char *str_proto[CONMGR_PROTO_NUM] =
+	{"UNSPEC", "IPv4", "HIP", "MIPv6"};
 
-static inline const char * convert_proto(int protocol) {
+static inline const char * proto_to_str(int protocol)
+{
 	if (protocol < 0 || protocol >= CONMGR_PROTO_NUM)
 		return "INVALID";
 	else
@@ -68,13 +72,14 @@ static inline void dump_one_connection(struct connection *conn)
 		strcpy(str_addr_port, "(null)");
 	}
 	log_info("    Connection: %-5d %5d %-6s %4d %s\t%s",
-		conn->appID, conn->sockfd, convert_proto(conn->protocol),
+		conn->appID, conn->sockfd, proto_to_str(conn->protocol),
 		conn->active_rule, str_addr_port, conn->app_desc);
 	//pthread_mutex_unlock(&conn->mutex);	//hold con_tbl_mutex
 }
 
 /* TODO: to string */
-void conmgr_dump_connections() {
+void conmgr_dump_connections()
+{
 	struct connection *conn;
 
 	pthread_mutex_lock(&con_tbl_mutex);
@@ -109,14 +114,14 @@ void conmgr_dump_connections() {
 }
 
 /* get application path through pid, return value must be freed */
-static inline char * get_app_path(pid_t pid)
+static char * get_app_path(pid_t pid)
 {
 	char link_path[PATH_BUF_SIZE];
 	char buf[LINE_BUF_SIZE];
 	char *app_path = NULL;
 	int r;
 
-	sprintf(link_path, "%s/%d/%s", PROC_PATH, pid, EXEFILE_NAME);
+	sprintf(link_path, "%s/%d/%s", PROC_PATH, pid, PROC_EXE_FILENAME);
 	debug("link path: %s", link_path);
 
 	r = readlink(link_path, buf, LINE_BUF_SIZE);
@@ -153,7 +158,6 @@ static int init_connection_table() {
 		check(con_tbl_head, "Failed to allocate space for connection table (%s)", strerror(errno));
 		con_tbl_head->next = NULL;
 		con_tbl_tail = con_tbl_head;
-		log_info("Connection Manager initialized");
 	}
 	pthread_mutex_unlock(&con_tbl_mutex);
 	return 0;
@@ -312,18 +316,34 @@ void update_con_tbl_tail(struct connection *conn) {
 }
 */
 
-void * main_connection_manager(void *arg)
+static void free_connection_table()
+{
+	struct connection *curr_conn;
+
+	if (!con_tbl_head) return;
+
+	pthread_mutex_lock(&con_tbl_mutex);
+	while (con_tbl_head->next != NULL) {
+		curr_conn = con_tbl_head->next;
+		con_tbl_head->next = curr_conn->next;
+		free_connection(curr_conn);
+	}
+	free_connection(con_tbl_head);
+	con_tbl_head = NULL;
+	con_tbl_tail = NULL;
+	pthread_mutex_unlock(&con_tbl_mutex);
+}
+
+static void * conmgr_main_loop()
 {
 #ifdef DEBUG_CONMGR
-	init_connection_table();
-
 	printf("This is a debugging version, please use the following command to control connection manager:\n");
 	printf("\ta <sockfd> <appID>\t-\tadd a connection\n");
 	printf("\tc <sockfd> <child_sockfd>\t-\tadd a child connection\n");
 	printf("\ts <sockfd> <status>\t-\tupdate the status of an existing connection specified by sockfd\n");
 	printf("\td <sockfd> <appID>\t-\tdelete an existing connection specified by sockfd and appID\n");
 
-	while (1) {
+	while (!exit_flag) {
 		char choice;
 		int socket;
 		int appID;
@@ -353,43 +373,106 @@ void * main_connection_manager(void *arg)
 		conmgr_dump_connections();
 	}
 #else
-	int sock;
-	struct sockaddr_un name;
 	//char buf[SOCK_BUF_SIZE];
+	fd_set conmgr_fds;
+	struct sockaddr_un from_addr;
+	socklen_t addrlen;
 	conmsg_t con_msg;
+	int max_fd;
+	int r;
 
-	sock = socket(AF_UNIX, SOCK_DGRAM, 0);
-	check(sock >= 0, "Failed to create UNIX domain datagram socket");
-	name.sun_family = AF_UNIX;
-	strcpy(name.sun_path, CONMGR_NAME);
-	init_connection_table();
-	check(!bind(sock, (struct sockaddr *) &name, sizeof(struct sockaddr_un)),
-		"Failed to bind UNIX socket with name %s", CONMGR_NAME);
+	max_fd = MAX(conmgr_sock, exit_pipe[0]);
 
-	/* just one socket, no need to select */
-	//while (read(sock, buf, SOCK_BUF_SIZE)) {
-	while (read(sock, &con_msg, sizeof(conmsg_t))) {
-		debug("message received from pid %d", con_msg.pid);
-		switch (con_msg.cmd) {
-		case CONMGR_CMD_ADD:
-			add_connection(con_msg.pid, con_msg.sockfd,
-				(struct sockaddr *)&con_msg.addr,
-				con_msg.addrlen);
+	while (!exit_flag) {
+		FD_ZERO(&conmgr_fds);
+		FD_SET(conmgr_sock, &conmgr_fds);
+		FD_SET(exit_pipe[0], &conmgr_fds);
+
+		r = select(max_fd + 1, &conmgr_fds, NULL, NULL, NULL);
+		check(r >= 0, "Select exception");
+		debug("select returns %d", r);
+
+		if (FD_ISSET(exit_pipe[0], &conmgr_fds))
 			break;
-		case CONMGR_CMD_REMOVE:
-			remove_connection(con_msg.pid, con_msg.sockfd);
-			break;
-		default:
-			log_warn("unknown command");
-			break;
+
+		if (FD_ISSET(conmgr_sock, &conmgr_fds)) {
+			addrlen = sizeof(struct sockaddr_un);
+			r = recvfrom(conmgr_sock, &con_msg, sizeof(conmsg_t),
+				0, (struct sockaddr *)&from_addr, &addrlen);
+			//r = read(conmgr_sock, &con_msg, sizeof(conmsg_t));
+			check(r > 0, "read connection message returns %d", r);
+
+			debug("message received from pid %d", con_msg.pid);
+			switch (con_msg.cmd) {
+			case CONMGR_CMD_ADD:
+				add_connection(con_msg.pid, con_msg.sockfd,
+					(struct sockaddr *)&con_msg.addr,
+					con_msg.addrlen);
+				break;
+			case CONMGR_CMD_REMOVE:
+				remove_connection(con_msg.pid, con_msg.sockfd);
+				break;
+			default:
+				log_warn("unknown command");
+				break;
+			}
+
+			if (sendto(conmgr_sock, &r, sizeof(int), 0,
+				(struct sockaddr *)&from_addr, addrlen) < 0)
+				log_warn("failed to respond");
 		}
 	}
 
 error:
-	if (sock >= 0)
-		close(sock);
-
+	free_connection_table();
+	if (conmgr_sock >= 0) {
+		close(conmgr_sock);
+		conmgr_sock = -1;
+		unlink(CONMGR_SOCKET_NAME);
+	}
 #endif
 
+	log_info("connection manager exiting");
+
 	return NULL;
+}
+
+int init_connection_manager(pthread_t *conmgr_thread_ptr)
+{
+#ifdef DEBUG_CONMGR
+	init_connection_table();
+	pthread_create(conmgr_thread_ptr, NULL, conmgr_main_loop, NULL);
+	return 0;
+
+#else
+	struct sockaddr_un name;
+
+	check(!init_connection_table(), "Initializing connection table");
+
+	conmgr_sock = socket(AF_UNIX, SOCK_DGRAM, 0);
+	check(conmgr_sock >= 0, "Failed to create UNIX datagram socket");
+
+	name.sun_family = AF_UNIX;
+	strcpy(name.sun_path, CONMGR_SOCKET_NAME);
+	unlink(name.sun_path);
+	check(!bind(conmgr_sock, (struct sockaddr *)&name,
+			sizeof(struct sockaddr_un)),
+		"Failed to bind socket with name %s", CONMGR_SOCKET_NAME);
+
+	check(!pthread_create(conmgr_thread_ptr, 0, conmgr_main_loop, 0),
+		"Failed to create thread for connection manager");
+
+	debug("Connection Manager initialized");
+	return 0;
+
+error:
+	free_connection_table();
+	if (conmgr_sock >= 0) {
+		close(conmgr_sock);
+		conmgr_sock = -1;
+		unlink(CONMGR_SOCKET_NAME);
+	}
+
+	return -1;
+#endif
 }

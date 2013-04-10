@@ -11,6 +11,6 @@ void trigger_policy_engine();
 
 void evaluate(struct connection *conn);
 
-void * main_policy_engine();
+int init_policy_engine(pthread_t *pe_thread_ptr);
 
 #endif

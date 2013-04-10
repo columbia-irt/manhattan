@@ -1,12 +1,12 @@
 TOPDIR = ..
 include $(TOPDIR)/Makefile.inc
 
-LIBS += -lpthread -lxml2 -lsine
+LIBS += -lvlc
 
-OBJECTS = main.o conmgr.o netmgr.o locmgr.o pe.o socks.o
+OBJECTS = vlc.o
 SOURCES = $(patsubst %.o, %.c, $(OBJECTS)) $(patsubst %.o, %.h, $(OBJECTS))
 
-TARGET = sined
+TARGET = ssmd
 
 all: $(TARGET)
 

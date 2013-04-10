@@ -5,6 +5,6 @@
 
 int locmgr_get_location(char *loc);
 
-void * main_location_manager(void *arg);
+int init_location_manager(pthread_t *locmgr_thread_ptr);
 
 #endif

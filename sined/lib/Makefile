@@ -10,7 +10,7 @@ SO_TARGET = $(patsubst %.a, %.so, $(TARGET))
 
 default: $(TARGET)
 
-all: $(TARGET) $(SO_TARGET)
+all: $(TARGET)
 
 $(TARGET): CFLAGS += -fPIC
 $(TARGET): $(OBJECTS)
@@ -25,7 +25,7 @@ install: all
 	install -d $(PREFIX)/lib/
 	install -d $(PREFIX)/include/
 	install $(TARGET) $(PREFIX)/lib/
-	install $(SO_TARGET) $(PREFIX)/lib/
+	#install $(SO_TARGET) $(PREFIX)/lib/
 	install $(HEADERS) $(PREFIX)/include/
 
 clean:

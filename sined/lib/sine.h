@@ -20,5 +20,6 @@ extern int sine_accept (int __fd, __SOCKADDR_ARG __addr,
 extern int sine_close (int __fd);
 
 int sine_sendto_conmgr(void *buf, size_t len);
+int libsine_exit(void);
 
 #endif
