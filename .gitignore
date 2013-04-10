@@ -4,6 +4,7 @@ sined/src/sined
 middleware/sined
 middleware/socks
 middleware/locationMgr/lm
+ssm/ssmd
 protocols/mih/boost_1_48_0
 protocols/mih/odtone/bin.v2
 protocols/mih/odtone/dist/output

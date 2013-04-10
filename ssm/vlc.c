@@ -57,9 +57,14 @@ int init_ssm_socket()
 {
 	int sockfd;
 	struct sockaddr_in sa;
+	int on = 1;
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	debug("sockfd: %d", sockfd);
 	check(sockfd >= 0, "creat socket");
+
+	check(!setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(int)),
+		"setsockopt SO_REUSEADDR");
 
 	sa.sin_family = AF_INET;
 	sa.sin_addr.s_addr = INADDR_ANY;
@@ -106,7 +111,7 @@ void handle_user_input()
 
 		sa.sin_family = AF_INET;
 		check(inet_aton(arg, &sa.sin_addr), "invalid IP address");
-		sa.sin_port = SSM_PORT;
+		sa.sin_port = htons(SSM_PORT);
 		check(!connect(sockfd, (struct sockaddr *)&sa,
 			sizeof(struct sockaddr_in)), "connect to %s", arg);
 
@@ -136,10 +141,13 @@ void handle_network_input(int sockfd)
 	struct sockaddr_in sa;
 	socklen_t addrlen;
 	char buf[BUF_SIZE];
+	char addr[INET_ADDRSTRLEN];
 	int r;
 
+	addrlen = sizeof(struct sockaddr_in);
 	new_sockfd = accept(sockfd, (struct sockaddr *)&sa, &addrlen);
 	check(new_sockfd >= 0, "accept");
+
 	r = recv(new_sockfd, buf, BUF_SIZE, 0);
 	check(r > 0, "recv");
 	buf[r] = '\0';
