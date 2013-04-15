@@ -14,6 +14,7 @@
 
 libvlc_instance_t *inst;
 libvlc_media_player_t *mp;
+struct sockaddr_in sa_device;
 
 int open_media(const char *mrl)
 {
@@ -104,18 +105,19 @@ void handle_user_input()
 	}
 	else if (!strcmp(cmd, "forward") && arg != NULL) {
 		int sockfd;
-		struct sockaddr_in sa;
 
 		sockfd = socket(AF_INET, SOCK_STREAM, 0);
 		check(sockfd >= 0, "creat socket");
 
-		sa.sin_family = AF_INET;
-		check(inet_aton(arg, &sa.sin_addr), "invalid IP address");
-		sa.sin_port = htons(SSM_PORT);
-		check(!connect(sockfd, (struct sockaddr *)&sa,
+		sa_device.sin_family = AF_INET;
+		check(inet_aton(arg, &sa_device.sin_addr),
+			"invalid IP address");
+		sa_device.sin_port = htons(SSM_PORT);
+		check(!connect(sockfd, (struct sockaddr *)&sa_device,
 			sizeof(struct sockaddr_in)), "connect to %s", arg);
 
-		/* must wait for response, if succeeded (1), close the local display */
+		/* must wait for response, if succeeded (1) *
+		 * close the local display */
 		strcpy(buf, "open");
 		send(sockfd, buf, strlen(buf), 0);
 		check(recv(sockfd, buf, BUF_SIZE, 0) > 0,
@@ -129,6 +131,24 @@ void handle_user_input()
 		debug("stop & delete media");
 		libvlc_vlm_stop_media(inst, BROADCAST_NAME);
 		libvlc_vlm_del_media(inst, BROADCAST_NAME);
+	}
+	else if (!strcmp(cmd, "back")) {
+		int sockfd;
+
+		sockfd = socket(AF_INET, SOCK_STREAM, 0);
+		check(sockfd >= 0, "creat socket");
+
+		check(!connect(sockfd, (struct sockaddr *)&sa_device,
+			sizeof(struct sockaddr_in)), "connect to %s", arg);
+		/* must wait for response, if succeeded (1) *
+		 * bring up the local display */
+		strcpy(buf, "stop");
+		send(sockfd, buf, strlen(buf), 0);
+		check(recv(sockfd, buf, BUF_SIZE, 0) > 0,
+			"failed to get response");
+
+		if (buf[0] == '1')
+			local_display(LOCAL_MRL);
 	}
 
 error:
