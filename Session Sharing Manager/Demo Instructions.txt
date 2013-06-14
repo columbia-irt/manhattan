@@ -1,0 +1,19 @@
+Here are the corresponding files you need to see for demo1 (just videostreaming from device A to device B):
+service_video
+query_video
+servicelistenerA_B.py
+videoA_B_client.py
+videoA_B_server.py
+sample.mp4
+
+For demo2 :
+query
+queryA
+service
+serviceA
+servicelistener.py
+audiortp.py
+audiortpA.py
+audiortpclient.py
+audiortpclientA.py
+Heartbeat.mp3
